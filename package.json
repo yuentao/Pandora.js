@@ -1,0 +1,15 @@
+{
+    "name": "Pandora",
+    "version": "1.0.0",
+    "description": "",
+    "main": "Pandora.js",
+    "scripts": {
+        "build": "babel Pandora.js --out-file Pandora.min.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "babel": "^6.23.0"
+    }
+}

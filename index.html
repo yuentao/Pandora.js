@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pandora.Router</title>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <template route="/">
+      <span>初始页</span>
+      <br />
+      <a href="#/index">下一页</a>
+    </template>
+
+    <template route="/index">
+      <h1>第二页</h1>
+      <br />
+      <strong>点击浏览器的后退可以返回上一级路由</strong>
+      <br />
+      <a href="#/page">最后一页</a>
+    </template>
+
+    <template route="/page">
+      <h3>第三页</h3>
+      <br />
+      <button id="test">点击触发事件</button>
+      <br />
+      <img width="500" src="https://upload.pandorajs.com/image/upload.pandorajs.com_PandoraAPI_1578307152137/Yz_D2vlP3to.jpg" />
+      <br />
+      <strong>点击浏览器的后退可以返回上一级路由</strong>
+      <br />
+      <a href="#/">返回到初始路由</a>
+      <script>
+        $("#test").click(() => {
+          alert("点击事件");
+        });
+      </script>
+    </template>
+  </body>
+  <script src="./Pandora.js"></script>
+  <script>
+    let router = $("#app").Router({
+      routes: [
+        {
+          path: "/",
+        },
+        {
+          path: "/index",
+        },
+        {
+          path: "/page",
+          callback() {},
+          error() {
+            console.log("错误");
+          },
+        },
+      ],
+    });
+  </script>
+</html>
