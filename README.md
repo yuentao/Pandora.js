@@ -1,3 +1,7 @@
+# Pandora.js
+
+#### 专为新手优化的JavaScript插件库，具备前端最常使用的插件，插件属性丰富，足以满足大部分前端的功能需求。
+
 ## 基础方法
 ```javascript
 window.alert(`文本内容`);
