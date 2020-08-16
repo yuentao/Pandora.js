@@ -6,3 +6,4 @@ src/_notes
 package.json
 package-lock.json
 webpack.config.js
+gulpfile.js
