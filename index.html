@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pandora.Router</title>
+    <script src="./Pandora.min.js"></script>
+    <style>
+      template {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <template route="/"><a href="#/d?test=123">123</a></template>
+    <template route="/d">
+      <h1>123</h1>
+      <a href="#/ddd">5555</a>
+    </template>
+    <template route="/ddd"><h1>123</h1></template>
+  </body>
+  <script>
+    $("#app").Router({
+      routes: [
+        {
+          path: "/",
+          callback() {
+            console.log("首页");
+          },
+        },
+        {
+          path: "/d",
+          callback(res) {
+            console.log(res);
+          },
+        },
+        {
+          path: "/ddd",
+        },
+      ],
+    });
+  </script>
+</html>
