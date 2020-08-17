@@ -4,17 +4,6 @@
     <meta charset="utf-8" />
     <title>Pandora.Router</title>
     <script src="./Pandora.min.js"></script>
-<<<<<<< HEAD
-  </head>
-  <body>
-    <div id="app"></div>
-    <a href="#/test">ad</a>
-    <template route="/test">123</template>
-  </body>
-  <script>
-    var router = new Pandora("#app").Router({
-      routes: [{ path: "/test" }],
-=======
     <style>
       template {
         display: none !important;
@@ -31,7 +20,7 @@
     <template route="/ddd"><h1>123</h1></template>
   </body>
   <script>
-    $("#app").Router({
+    new Pandora("#app").Router({
       routes: [
         {
           path: "/",
@@ -49,7 +38,6 @@
           path: "/ddd",
         },
       ],
->>>>>>> fc7b4abcaa6af5f3c367a543fd6c34becab07a7a
     });
   </script>
 </html>

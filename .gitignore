@@ -3,7 +3,5 @@ node_modules/
 _notes/
 src/_notes
 *.config
-package.json
-package-lock.json
 webpack.config.js
 gulpfile.js
