@@ -163,6 +163,9 @@
     "global-prefix": "^3.0.0",
     "globals": "^9.18.0",
     "graceful-fs": "^4.2.4",
+    "gulp": "^4.0.2",
+    "gulp-header": "^2.0.9",
+    "gulp-uglify": "^3.0.2",
     "has": "^1.0.3",
     "has-ansi": "^2.0.0",
     "has-flag": "^1.0.0",
@@ -406,7 +409,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "build": "run-s pack \"babel",
+    "build": "run-s pack \"babel \" minjs",
     "pack": "webpack webpack.config.js",
     "babel": "babel Pandora.min.js --out-file Pandora.min.js",
     "minjs": "gulp minifyjs"

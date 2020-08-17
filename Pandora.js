@@ -934,10 +934,11 @@ const PandoraJs = (SuperClass = null) => {
           childEle[cur].className += "active";
         }
         if (config.Pagination) {
-          parentEle.parentElement.querySelector(".Pd-pagination") &&
+          if (parentEle.parentElement.querySelector(".Pd-pagination")) {
             parentEle.parentElement.removeChild(
               parentEle.parentElement.querySelector(".Pd-pagination")
             );
+          }
           let pager = document.createElement("div");
           pager.className = "Pd-pagination";
 
@@ -2189,7 +2190,7 @@ const PandoraJs = (SuperClass = null) => {
         //分享描述(类型：字符串)
         desc: "Simple for this",
         //分享图(类型：字符串或数组)
-        sharepics: "//pandorajs.com/share_ico.jpg",
+        sharepics: "https://pandorajs.com/share_ico.jpg",
         //分享链接(类型：字符串或数组)
         sharelinks: location.href,
         //调试(类型：布尔)
@@ -2240,8 +2241,15 @@ const PandoraJs = (SuperClass = null) => {
       };
 
       const success = res => {
-        const { debug, appId, timestamp, nonceStr, signature, jsApiList } = res;
-        wx.config({ debug, appId, timestamp, nonceStr, signature, jsApiList });
+        const { appId, timestamp, nonceStr, signature } = res;
+        wx.config({
+          debug: config.debug,
+          appId,
+          timestamp,
+          nonceStr,
+          signature,
+          jsApiList,
+        });
         wx.ready(() => {
           new Promise(next => {
             const timeLine = {
@@ -2265,43 +2273,41 @@ const PandoraJs = (SuperClass = null) => {
 
             if (wx.onMenuShareTimeline) {
               const { title, link, imgUrl } = timeLine;
-              wx.onMenuShareTimeline({
-                title,
-                link,
-                imgUrl,
-                success: config.callback.success,
-                cancel: config.callback.error,
-              });
+              const { success, error } = config.callback;
+              wx.onMenuShareTimeline({ title, link, imgUrl, success, error });
             } else {
               const { title, link, imgUrl } = timeLine;
+              const { success, error } = config.callback;
               wx.updateTimelineShareData({
                 title,
                 link,
                 imgUrl,
-                success: config.callback.success,
-                cancel: config.callback.error,
+                success,
+                error,
               });
             }
 
             if (wx.onMenuShareAppMessage) {
               const { title, link, imgUrl } = friend;
+              const { success, error } = config.callback;
               wx.onMenuShareAppMessage({
                 title,
                 desc: config.desc,
                 link,
                 imgUrl,
-                success: config.callback.success,
-                cancel: config.callback.error,
+                success,
+                error,
               });
             } else {
               const { title, link, imgUrl } = friend;
+              const { success, error } = config.callback;
               wx.updateAppMessageShareData({
                 title,
                 desc,
                 link,
                 imgUrl,
-                success: config.callback.success,
-                cancel: config.callback.error,
+                success,
+                error,
               });
             }
             next();
@@ -2312,7 +2318,6 @@ const PandoraJs = (SuperClass = null) => {
       scriptTag.onload = () => {
         this.fetch({
           url: `${config.apiUrl}${encodeURIComponent(location.href)}`,
-          type: "post",
           success: success,
         });
       };
