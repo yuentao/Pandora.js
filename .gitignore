@@ -1,6 +1,18 @@
+<<<<<<< HEAD
 .gitignore
 /node_modules
 .babelrc
 /_notes
 src/_notes
 *.config
+=======
+node_modules/
+.babelrc
+_notes/
+src/_notes
+*.config
+package.json
+package-lock.json
+webpack.config.js
+gulpfile.js
+>>>>>>> fc7b4abcaa6af5f3c367a543fd6c34becab07a7a
