@@ -242,8 +242,6 @@ const PandoraAPI = class {
       } else {
         this.get = ele.querySelector(name);
       }
-      const children = this.get;
-      children.eventList = [];
       return this;
     };
     //选择父级元素
@@ -660,10 +658,46 @@ const PandoraAPI = class {
           container.appendChild(document.importNode(temp.content, !0));
           success();
         } else {
-          console.error(`不存在以下模板块：${route}`);
+          console.error(`不存在以下路由模板：${route}`);
           fail();
         }
       });
+    };
+    // 获取url参数并转换成对象
+    this.getParams = () => {
+      let url = location.href.split("?");
+      if (location.href.indexOf("?") > -1) {
+        let obj = {};
+        if (url[1].split("&")) {
+          let params = url[1].split("&");
+          params.map(v => {
+            obj[v.split("=")[0]] = v.split("=")[1];
+          });
+        } else {
+          obj[url[1].split("=")[0]] = obj[url[1].split("=")[1]];
+        }
+        return obj;
+      } else {
+        return null;
+      }
+    };
+    // HASH改变
+    this.hashChange = callback => {
+      const getRoutePath = () => {
+        if (location.hash.indexOf("#") > -1) {
+          return location.hash.match(/#(\S*)\?/) == null
+            ? location.hash.match(/#(\S*)/)[1]
+            : location.hash.match(/#(\S*)\?/)[1];
+        } else {
+          return !1;
+        }
+      };
+      const routePath = getRoutePath();
+      if (routePath) {
+        callback(routePath);
+      } else {
+        callback("/");
+      }
     };
   }
 };
@@ -684,7 +718,7 @@ const PandoraJs = (SuperClass = null) => {
         //生命周期-首次渲染完成(类型：方法；返回当前渲染数据)
         Init: null,
         // 生命周期-更新渲染完成(类型：方法)
-        Updata: null,
+        Update: null,
       };
       config = this.extend(config, options);
       let Html = this.html(),
@@ -734,7 +768,7 @@ const PandoraJs = (SuperClass = null) => {
           set: value => {
             config.data[e] = value;
             renderHtml();
-            config.Updata && config.Updata();
+            config.Update && config.Update();
           },
           get: () => {
             return config.data[e];
@@ -754,40 +788,22 @@ const PandoraJs = (SuperClass = null) => {
       };
       config = this.extend(config, options);
       const that = this;
+      let fromParams;
       templatePolyfill();
-
-      // 获取url参数并转换成对象
-      const getParams = () => {
-        let url = location.href.split("?");
-        if (location.href.indexOf("?") > -1) {
-          let obj = {};
-          if (url[1].split("&")) {
-            let params = url[1].split("&");
-            params.map(v => {
-              obj[v.split("=")[0]] = v.split("=")[1];
-            });
-          } else {
-            obj[url[1].split("=")[0]] = obj[url[1].split("=")[1]];
-          }
-          return obj;
-        } else {
-          return null;
-        }
-      };
 
       // 遍历路由路径
       const eachRoutes = path => {
         return new Promise((success, fail) => {
           if (config.routes && path) {
             if (JSON.stringify(config.routes).indexOf(path) < 0) {
-              fail("notPath");
+              fail(`${path} 不存在于routes！`);
             } else {
               config.routes.forEach(e => {
                 if (path == e.path) {
                   that
                     .template(path, that.get)
                     .then(() => {
-                      let query = getParams();
+                      let query = fromParams || that.getParams();
                       e.callback && e.callback(query);
                       success();
                     })
@@ -799,27 +815,6 @@ const PandoraJs = (SuperClass = null) => {
             }
           }
         });
-      };
-
-      // HASH改变
-      const hashChange = () => {
-        let newUrl = location.href.replace(location.search, "");
-        window.history.pushState(null, "", newUrl);
-        const getRoutePath = () => {
-          if (location.hash.indexOf("#") > -1) {
-            return location.hash.match(/#(\S*)\?/) == null
-              ? location.hash.match(/#(\S*)/)[1]
-              : location.hash.match(/#(\S*)\?/)[1];
-          } else {
-            return !1;
-          }
-        };
-        const routePath = getRoutePath();
-        if (routePath) {
-          eachRoutes(routePath);
-        } else {
-          eachRoutes("/");
-        }
       };
 
       // 路由导航
@@ -837,8 +832,86 @@ const PandoraJs = (SuperClass = null) => {
         });
       };
 
-      window.onload = hashChange;
-      window.onhashchange = hashChange;
+      if (config.routes) {
+        let newUrl = location.href.replace(location.search, "");
+        fromParams = that.getParams();
+        window.history.pushState(null, "", newUrl);
+
+        window.onload = () => {
+          that.hashChange(eachRoutes);
+        };
+        window.onhashchange = () => {
+          that.hashChange(eachRoutes);
+        };
+      }
+      return this;
+    }
+    //NEW: 文件路由
+    filesRouter(options) {
+      let config = {
+        routes: null,
+      };
+      config = this.extend(config, options);
+      const that = this;
+      let fromParams;
+
+      // 遍历路由路径
+      const eachRoutes = path => {
+        return new Promise((success, fail) => {
+          if (config.routes && path) {
+            if (JSON.stringify(config.routes).indexOf(path) < 0) {
+              fail(`${path} 不存在于routes！`);
+            } else {
+              config.routes.forEach(e => {
+                if (path == e.path) {
+                  that.ajax({
+                    url: `${path}.tmp`,
+                    success(html) {
+                      that.empty();
+                      that.html(html);
+                      const Nodes = that.get.querySelectorAll("*");
+
+                      Nodes.forEach(e => {
+                        let script = document.createElement("script");
+                        if (e.tagName.toLowerCase() == "script") {
+                          if (e.src) {
+                            script.src = e.src;
+                          } else {
+                            script.innerHTML = e.innerHTML;
+                          }
+                          e.parentElement.removeChild(e);
+                          that.get.appendChild(script);
+                        }
+                      });
+
+                      let query = fromParams || that.getParams();
+                      e.callback && e.callback(query);
+                      success();
+                    },
+                    fail() {
+                      e.error && e.error();
+                    },
+                  });
+                }
+              });
+            }
+          }
+        });
+      };
+
+      if (config.routes) {
+        let newUrl = location.href.replace(location.search, "");
+        fromParams = that.getParams();
+        window.history.pushState(null, "", newUrl);
+
+        window.onload = () => {
+          that.hashChange(eachRoutes);
+        };
+        window.onhashchange = () => {
+          that.hashChange(eachRoutes);
+        };
+      }
+
       return this;
     }
     //轮播切换
@@ -1303,7 +1376,7 @@ const PandoraJs = (SuperClass = null) => {
             isMobile = !1;
             this.css({ "font-size": this.css("font-size") });
           }
-          this.attr("ismobile", isMobile);
+          this.attr("isMobile", isMobile);
         });
       };
       SetSize();
@@ -1516,8 +1589,8 @@ const PandoraJs = (SuperClass = null) => {
         callback: null,
         //加载错误(类型：方法)
         error: () => {
-          console.error("资源加载错误");
-          alert("资源加载错误");
+          console.error("图片资源加载错误");
+          alert("图片资源加载错误");
         },
       };
       config = this.extend(config, options);
@@ -1582,7 +1655,7 @@ const PandoraJs = (SuperClass = null) => {
       });
 
       //加载中
-      let loadingFrame, loadstepFrame;
+      let loadingFrame, loadStepFrame;
 
       Promise.all(loaderList)
         .then(() => {
@@ -1591,7 +1664,7 @@ const PandoraJs = (SuperClass = null) => {
         .catch(() => {
           config.error();
           cancelAnimationFrame(loadingFrame);
-          cancelAnimationFrame(loadstepFrame);
+          cancelAnimationFrame(loadStepFrame);
         });
 
       const loading = () => {
@@ -1604,21 +1677,21 @@ const PandoraJs = (SuperClass = null) => {
           }
         }
       };
-      const loadstep = () => {
+      const loadStep = () => {
         if (floatNum < 100) {
           if (floatNum < step) floatNum++;
           this.attr("Pd-load", floatNum);
           config.loading && config.loading(floatNum);
           if (floatNum === 100) {
-            cancelAnimationFrame(loadstepFrame);
+            cancelAnimationFrame(loadStepFrame);
             config.lazy && config.callback && config.callback();
           } else {
-            loadstepFrame = requestAnimationFrame(loadstep);
+            loadStepFrame = requestAnimationFrame(loadStep);
           }
         }
       };
       loading();
-      loadstep();
+      loadStep();
       return this;
     }
     //图片上传
@@ -1630,7 +1703,7 @@ const PandoraJs = (SuperClass = null) => {
         apiName: "Pd_uploadImage",
         //格式限制(类型：字符串)
         Format: "*",
-        //选择类型(可选参数：defualt、camera)
+        //选择类型(可选参数：default、camera)
         type: "default",
         //限制数量(类型：数字)
         Max: 1,
@@ -1662,7 +1735,7 @@ const PandoraJs = (SuperClass = null) => {
       this.empty();
       this.get.insertAdjacentHTML(
         "afterbegin",
-        `<label for="Pd_imgupload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`
+        `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`
       );
       let uploadBtn = document.createElement("input"),
         userId,
@@ -1677,7 +1750,7 @@ const PandoraJs = (SuperClass = null) => {
 
       uploadBtn.type = "file";
       uploadBtn.accept = `image/${config.Format}`;
-      uploadBtn.id = `Pd_imgupload_${this.pid}`;
+      uploadBtn.id = `Pd_imgUpload_${this.pid}`;
       if (config.type === "camera") uploadBtn.setAttribute("capture", "camera");
       uploadBtn.style.display = "none";
       if (config.Max > 1) uploadBtn.multiple = !0;
@@ -1802,7 +1875,7 @@ const PandoraJs = (SuperClass = null) => {
       };
       config = this.extend(config, options);
       let imgRealArr = this.get.querySelectorAll("img"),
-        beforImgArr = Array.prototype.slice.call(imgRealArr),
+        beforeImgArr = Array.prototype.slice.call(imgRealArr),
         imgArr = [],
         imgIndex = [],
         btnAnimation = "transition:opacity .2s ease-in",
@@ -1813,7 +1886,7 @@ const PandoraJs = (SuperClass = null) => {
         position: "relative",
       });
 
-      beforImgArr.forEach((cur, idx) => {
+      beforeImgArr.forEach((cur, idx) => {
         if (JSON.parse(cur.getAttribute("Pd-move"))) {
           imgIndex.push(idx);
           imgArr.push(cur);
@@ -1853,7 +1926,7 @@ const PandoraJs = (SuperClass = null) => {
       };
 
       //删除原始元素
-      const deletDefault = () => {
+      const deleteDefault = () => {
         let imgRealArr = this.get.querySelectorAll("img"),
           imgArr = Array.prototype.slice.call(imgRealArr);
         imgArr.forEach((cur, idx) => {
@@ -1864,14 +1937,14 @@ const PandoraJs = (SuperClass = null) => {
       };
 
       //设置参数
-      const setConfig = (ele, eleconfig) => {
+      const setConfig = (ele, eleConfig) => {
         for (let a of ele.querySelectorAll(".Pd-ImgTransit-btn"))
-          a.style.transform = `scale(${1 / (eleconfig.scale / 100)}) rotate(${
-            -1 * eleconfig.rotate
+          a.style.transform = `scale(${1 / (eleConfig.scale / 100)}) rotate(${
+            -1 * eleConfig.rotate
           }deg)`;
         return (ele.style.transform = `translate3d(${
-          eleconfig.translate
-        }) scale(${eleconfig.scale / 100}) rotate(${eleconfig.rotate}deg)`);
+          eleConfig.translate
+        }) scale(${eleConfig.scale / 100}) rotate(${eleConfig.rotate}deg)`);
       };
 
       //获取中心
@@ -1941,16 +2014,16 @@ const PandoraJs = (SuperClass = null) => {
               event.stopImmediatePropagation();
               event.preventDefault();
               const changePosition = () => {
-                let nowx = event.changedTouches[0].pageX,
-                  nowy = event.changedTouches[0].pageY,
+                let nowX = event.changedTouches[0].pageX,
+                  nowY = event.changedTouches[0].pageY,
                   w = event.target.getBoundingClientRect().width,
                   h = event.target.getBoundingClientRect().height,
                   icon = event.target.parentElement
                     .querySelectorAll(".Pd-ImgTransit-btn")[0]
                     .getBoundingClientRect(),
-                  iconw = icon.width / 2;
-                touchX = nowx - startX;
-                touchY = nowy - startY;
+                  iconW = icon.width / 2;
+                touchX = nowX - startX;
+                touchY = nowY - startY;
                 let getBounding = eleReal[
                     idx
                   ].parentElement.getBoundingClientRect(),
@@ -1964,21 +2037,21 @@ const PandoraJs = (SuperClass = null) => {
                   };
 
                 if (config.bounds) {
-                  if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconw) {
+                  if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconW) {
                     if (touchX < 0) {
-                      touchX = -1 * (parentBox.width / 2 - w / 2 - iconw);
+                      touchX = -1 * (parentBox.width / 2 - w / 2 - iconW);
                     } else {
-                      touchX = parentBox.width / 2 - w / 2 - iconw;
+                      touchX = parentBox.width / 2 - w / 2 - iconW;
                     }
                   }
                   if (
                     Math.abs(touchY) >=
-                    parentBox.height / 2 - h / 2 - iconw
+                    parentBox.height / 2 - h / 2 - iconW
                   ) {
                     if (touchY < 0) {
-                      touchY = -1 * (parentBox.height / 2 - h / 2 - iconw);
+                      touchY = -1 * (parentBox.height / 2 - h / 2 - iconW);
                     } else {
-                      touchY = parentBox.height / 2 - h / 2 - iconw;
+                      touchY = parentBox.height / 2 - h / 2 - iconW;
                     }
                   }
                 }
@@ -2162,13 +2235,13 @@ const PandoraJs = (SuperClass = null) => {
           );
           let imgCon = this.get.querySelectorAll(".Pd-ImgTransit")[idx];
           cur.style.transition = "transform .4s ease-in";
-          [].slice.call(cur.attributes).forEach(atts => {
+          [].slice.call(cur.attributes).forEach(attrs => {
             if (
-              atts.name !== "style" &&
-              atts.name !== "id" &&
-              atts.name !== "class"
+              attrs.name !== "style" &&
+              attrs.name !== "id" &&
+              attrs.name !== "class"
             )
-              imgCon.setAttribute(atts.name, atts.value);
+              imgCon.setAttribute(attrs.name, attrs.value);
           });
           imgCon.appendChild(cur);
           cur.removeAttribute("Pd-move");
@@ -2176,7 +2249,7 @@ const PandoraJs = (SuperClass = null) => {
           next(eleArr);
         });
       }).then(ele => {
-        deletDefault();
+        deleteDefault();
         addEvent(ele);
       });
     }
@@ -2190,9 +2263,9 @@ const PandoraJs = (SuperClass = null) => {
         //分享描述(类型：字符串)
         desc: "Simple for this",
         //分享图(类型：字符串或数组)
-        sharepics: "https://pandorajs.com/share_ico.jpg",
+        sharePics: "https://pandorajs.com/share_ico.jpg",
         //分享链接(类型：字符串或数组)
-        sharelinks: location.href,
+        shareLinks: location.href,
         //调试(类型：布尔)
         debug: !1,
         //微信jsApiList(类型：数组)
@@ -2254,21 +2327,21 @@ const PandoraJs = (SuperClass = null) => {
           new Promise(next => {
             const timeLine = {
                 title: isObj(config.title) ? config.title[0] : config.title,
-                link: isObj(config.sharelinks)
-                  ? config.sharelinks[0]
-                  : config.sharelinks,
-                imgUrl: isObj(config.sharepics)
-                  ? config.sharepics[0]
-                  : config.sharepics,
+                link: isObj(config.shareLinks)
+                  ? config.shareLinks[0]
+                  : config.shareLinks,
+                imgUrl: isObj(config.sharePics)
+                  ? config.sharePics[0]
+                  : config.sharePics,
               },
               friend = {
                 title: isObj(config.title) ? config.title[1] : config.title,
-                link: isObj(config.sharelinks)
-                  ? config.sharelinks[1]
-                  : config.sharelinks,
-                imgUrl: isObj(config.sharepics)
-                  ? config.sharepics[1]
-                  : config.sharepics,
+                link: isObj(config.shareLinks)
+                  ? config.shareLinks[1]
+                  : config.shareLinks,
+                imgUrl: isObj(config.sharePics)
+                  ? config.sharePics[1]
+                  : config.sharePics,
               };
 
             if (wx.onMenuShareTimeline) {
