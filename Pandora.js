@@ -1,5 +1,6 @@
 const templatePolyfill = require("template-polyfill");
 require("core-js/es6/promise");
+require("core-js/es6/object");
 require("core-js/es6/symbol");
 
 //兼容处理&&基础方法
@@ -89,7 +90,7 @@ require("core-js/es6/symbol");
       transition: opacity .4s ease-out;
       margin-bottom:5vh;`;
 
-    div.innerHTML = content;
+    div.innerText = content;
     mask.appendChild(div);
     document.body.appendChild(mask);
 
@@ -154,7 +155,7 @@ require("core-js/es6/symbol");
     confirm.style.cssText = buttonCSS;
     cancel.style.cssText = buttonCSS;
 
-    msg.innerHTML = content;
+    msg.innerText = content;
     div.appendChild(msg);
     confirm.innerText = confirmText || "确认";
     cancel.innerText = cancelText || "取消";
@@ -488,26 +489,24 @@ const PandoraAPI = class {
       return this;
     };
     //过渡结束事件
-    this.ontransition = fn => {
-      const ele = this.get;
+    this.transitionEnd = fn => {
       try {
         window.ontransitionend;
+        this.addEvent("transitionend", fn);
       } catch (err) {
+        console.error("不支持ontransitionend事件");
         return !1;
       }
-      ele.addEventListener("transitionend", fn);
       return this;
     };
-    //动画结束事件
-    this.animated = fn => {
-      const ele = this.get;
-      let isAnimated = !1;
-      ele.addEventListener("animationend", () => {
-        if (!isAnimated) {
-          isAnimated = !0;
-          fn();
-        }
-      });
+    //FIXME:动画结束事件
+    this.animationEnd = fn => {
+      try {
+        this.addEvent("animationend", fn);
+      } catch (err) {
+        console.error("不支持animationend事件");
+        return !1;
+      }
       return this;
     };
     //显示
@@ -713,11 +712,9 @@ const PandoraJs = (SuperClass = null) => {
       let config = {
         //渲染数据(类型：对象)
         data: null,
-        //事件绑定(类型：方法)
-        Bind: null,
-        //生命周期-首次渲染完成(类型：方法；返回当前渲染数据)
+        //生命周期-首次渲染完成(类型：方法；返回初始渲染数据)
         Init: null,
-        // 生命周期-更新渲染完成(类型：方法)
+        // 生命周期-每次更新渲染完成(类型：方法；返回最新渲染数据)
         Update: null,
       };
       config = this.extend(config, options);
@@ -727,14 +724,24 @@ const PandoraJs = (SuperClass = null) => {
         patterns = new RegExp("{{.*?}}"),
         matchValue;
 
-      const result = () => {
+      // 重构渲染数据
+      const getObj = res => {
+        let newObj = {};
+        for (let keyName of Object.keys(res)) {
+          newObj[keyName] = res[keyName];
+        }
+        return newObj;
+      };
+
+      // 获取所有MUSH变量
+      const getMush = () => {
         let r = [];
         Html.match(pattern).forEach((e, index) => {
           r[index] = e.split("{{")[1].split("}}")[0];
         });
         return r;
       };
-      matchValue = result();
+      matchValue = getMush();
 
       //渲染html
       const renderHtml = () => {
@@ -746,12 +753,11 @@ const PandoraJs = (SuperClass = null) => {
                 (Html = Html.replace(patterns, config.data[value] || ""));
           }
           this.html(Html);
-          config.Bind && eval(config.Bind);
           next();
         });
       };
 
-      //遍历变量是否被动态修改
+      // 返回所有唯一变量
       const unique = array => {
         let r = [];
         for (let i = 0, l = array.length; i < l; i++) {
@@ -763,21 +769,24 @@ const PandoraJs = (SuperClass = null) => {
 
       const realVal = unique(matchValue);
 
+      //遍历变量是否被动态修改
       realVal.forEach(e => {
         Object.defineProperty(this.globalData, e, {
           set: value => {
             config.data[e] = value;
             renderHtml();
-            config.Update && config.Update();
+            config.Update && config.Update(getObj(this.globalData));
           },
           get: () => {
             return config.data[e];
           },
+          // 是否枚举
+          enumerable: !0,
         });
       });
 
       renderHtml();
-      config.Init && config.Init(this.globalData);
+      config.Init && config.Init(getObj(this.globalData));
       return this;
     }
     //静态路由
@@ -1552,7 +1561,7 @@ const PandoraJs = (SuperClass = null) => {
               };
               calcDialog();
               window.onresize = () => {
-                this.ontransition(calcDialog);
+                this.transitionEnd(calcDialog);
               };
               next();
             });
@@ -1594,8 +1603,7 @@ const PandoraJs = (SuperClass = null) => {
         },
       };
       config = this.extend(config, options);
-      const $ = this.getEle("*"),
-        pattern = new RegExp('".*?"', "g"),
+      const pattern = new RegExp('".*?"', "g"),
         pattern2 = new RegExp(/'.*?'/, "g"),
         pattern3 = new RegExp(/\(.*?\)/, "g");
       let ImgArr = [],
@@ -1604,7 +1612,7 @@ const PandoraJs = (SuperClass = null) => {
         step = 0,
         floatNum = 0;
 
-      for (let e of $) {
+      for (let e of this.getEle("*")) {
         if (e.nodeName.toLowerCase() == "img") e.src && ImgArr.push(e.src);
         const getBg = window
           .getComputedStyle(e)
@@ -1628,7 +1636,6 @@ const PandoraJs = (SuperClass = null) => {
         }
       }
 
-      let loaderList = [];
       total = ImgArr.length;
 
       const loader = src => {
@@ -1650,47 +1657,32 @@ const PandoraJs = (SuperClass = null) => {
         });
       };
 
-      ImgArr.map(e => {
-        loaderList.push(loader(e));
+      //加载中
+      let loadStepFrame;
+
+      Promise.all(ImgArr.map(e => loader(e))).catch(() => {
+        cancelAnimationFrame(loadStepFrame);
+        config.error();
       });
 
-      //加载中
-      let loadingFrame, loadStepFrame;
-
-      Promise.all(loaderList)
-        .then(() => {
-          !config.lazy && config.callback && config.callback();
-        })
-        .catch(() => {
-          config.error();
-          cancelAnimationFrame(loadingFrame);
-          cancelAnimationFrame(loadStepFrame);
-        });
-
-      const loading = () => {
-        step = (cur / total) * 100;
-        if (step < 100) {
-          if (step === 100) {
-            cancelAnimationFrame(loadingFrame);
-          } else {
-            loadingFrame = requestAnimationFrame(loading);
-          }
-        }
-      };
       const loadStep = () => {
+        step = (cur / total) * 100;
         if (floatNum < 100) {
-          if (floatNum < step) floatNum++;
+          if (floatNum < step) config.lazy ? floatNum++ : (floatNum = step);
           this.attr("Pd-load", floatNum);
           config.loading && config.loading(floatNum);
           if (floatNum === 100) {
             cancelAnimationFrame(loadStepFrame);
-            config.lazy && config.callback && config.callback();
+            if (config.lazy) {
+              config.callback && config.callback();
+            } else {
+              setTimeout(config.callback, 100);
+            }
           } else {
             loadStepFrame = requestAnimationFrame(loadStep);
           }
         }
       };
-      loading();
       loadStep();
       return this;
     }
@@ -2396,7 +2388,7 @@ const PandoraJs = (SuperClass = null) => {
       };
       return this;
     }
-    //懒加载
+    //NEW:懒加载
     LazyLoad(options) {
       let config = {
         //缺省尺寸

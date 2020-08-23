@@ -1,5 +1,2 @@
-      <h1>123</h1>
-      <a href="#/ddd">5555</a>
-      <script>
-      console.log(123);
-      </script>
+<h1>测试</h1>
+<a href="#/template/test2">路由测试</a>

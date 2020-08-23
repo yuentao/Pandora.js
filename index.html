@@ -1,29 +1,56 @@
-<!DOCTYPE html>
-<html style="font-size: 16px;">
+﻿﻿<!DOCTYPE html>
+<html>
   <head>
+    <meta name="viewport" content="width=device-width" />
     <meta charset="utf-8" />
-    <title>Pandora.Router</title>
-    <script src="./Pandora.min.js"></script>
+    <title>无标题文档</title>
+    <style>
+      .test {
+        text-align: center;
+        color: white;
+        font-size: 30px;
+        font-family: simhei;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: black;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .tt {
+        background: url("https://upload.pandorajs.com/image/2.jpg") round;
+        display: none;
+      }
+    </style>
   </head>
+
   <body>
-    <div id="app"></div>
+    <div class="tt">{{test}}</div>
+    <img
+      width="500"
+      src="https://upload.pandorajs.com/image/upload.pandorajs.com_PandoraAPI_1578307152137/Yz_D2vlP3to.jpg?v1"
+      alt=""
+    />
+    <img
+      width="500"
+      src="https://upload.pandorajs.com/image/upload.pandorajs.com_PandoraAPI_1578307152137/Yz_D2vlP3to.jpg?v2"
+      alt=""
+    />
   </body>
+  <script src="Pandora.min.js"></script>
   <script>
-    new Pandora("#app").filesRouter({
-      routes: [
-        {
-          path: "/template/test",
-          callback(res) {
-            console.log(res);
-          },
-        },
-        {
-          path: "/template/test2",
-          callback() {
-            console.log(3);
-          },
-        },
-      ],
+    $(".tt").Mush({
+      data: {
+        test: "测试",
+        dd: "12313",
+      },
+      Init(res) {
+        console.log(res);
+      },
     });
   </script>
 </html>
