@@ -361,6 +361,7 @@ const PandoraAPI = class {
       }
     };
     //添加属性
+    //TODO:可同时应用多条属性
     this.attr = (name, val) => {
       const ele = this.get;
       if (val) {
@@ -1560,7 +1561,7 @@ const PandoraJs = (SuperClass = null) => {
     ImgUpload(options) {
       let config = {
         //接口地址(类型：字符串)
-        apiUrl: "//node.pandorastudio.cn/",
+        apiUrl: "//api.pandorajs.com/",
         //接口名称(类型：字符串)
         apiName: "Pd_uploadImage",
         //格式限制(类型：字符串)
