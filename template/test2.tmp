@@ -1,0 +1,7 @@
+<h2>JS测试</h2>
+<script>
+console.log("执行成功！");
+</script>
+<script>
+console.log("执行成功2！");
+</script>
