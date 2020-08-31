@@ -24,21 +24,32 @@ require("core-js/es6/symbol");
 
   //获取CSS变量
   const getRoot = name => {
-    return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`);
+    return getComputedStyle(document.documentElement).getPropertyValue(
+      `--${name}`
+    );
   };
 
   let rootText = "";
-  if (!getRoot("alertTheme")) rootText += "/*alert背景*/--alertTheme:rgba(0, 0, 0,.45);";
-  if (!getRoot("alertBg")) rootText += "/*alert遮罩*/--alertBg:rgba(0, 0, 0,.45);";
-  if (!getRoot("alertFontSize")) rootText += "/*alert字体大小*/--alertFontSize:1rem;";
+  if (!getRoot("alertTheme"))
+    rootText += "/*alert背景*/--alertTheme:rgba(0, 0, 0,.45);";
+  if (!getRoot("alertBg"))
+    rootText += "/*alert遮罩*/--alertBg:rgba(0, 0, 0,.45);";
+  if (!getRoot("alertFontSize"))
+    rootText += "/*alert字体大小*/--alertFontSize:1rem;";
   if (!getRoot("alertColor")) rootText += "/*alert字体颜色*/--alertColor:#fff;";
 
-  if (!getRoot("confirmTheme")) rootText += "/*confirm背景*/--confirmTheme:rgb(255, 255, 255);";
-  if (!getRoot("confirmBg")) rootText += "/*confirm遮罩*/--confirmBg:rgba(0, 0, 0,.45);";
-  if (!getRoot("confirmBtnBg")) rootText += "/*confirm按钮背景*/--confirmBtnBg:rgb(0,0,0);";
-  if (!getRoot("confirmFontSize")) rootText += "/*confirm字体大小*/--confirmFontSize:1rem;";
-  if (!getRoot("confirmColor")) rootText += "/*confirm字体颜色*/--confirmColor:#000;";
-  if (!getRoot("confirmBtnColor")) rootText += "/*confirm按钮字体颜色*/--confirmBtnColor:#fff;";
+  if (!getRoot("confirmTheme"))
+    rootText += "/*confirm背景*/--confirmTheme:rgb(255, 255, 255);";
+  if (!getRoot("confirmBg"))
+    rootText += "/*confirm遮罩*/--confirmBg:rgba(0, 0, 0,.45);";
+  if (!getRoot("confirmBtnBg"))
+    rootText += "/*confirm按钮背景*/--confirmBtnBg:rgb(0,0,0);";
+  if (!getRoot("confirmFontSize"))
+    rootText += "/*confirm字体大小*/--confirmFontSize:1rem;";
+  if (!getRoot("confirmColor"))
+    rootText += "/*confirm字体颜色*/--confirmColor:#000;";
+  if (!getRoot("confirmBtnColor"))
+    rootText += "/*confirm按钮字体颜色*/--confirmBtnColor:#fff;";
 
   //CSS支持度判断
   const style = document.createElement("style"),
@@ -79,7 +90,7 @@ require("core-js/es6/symbol");
       transition: opacity .4s ease-out;
       margin-bottom:5vh;`;
 
-    div.innerText = content;
+    div.innerText = content.toString();
     mask.appendChild(div);
     document.body.appendChild(mask);
 
@@ -144,10 +155,10 @@ require("core-js/es6/symbol");
     confirm.style.cssText = buttonCSS;
     cancel.style.cssText = buttonCSS;
 
-    msg.innerText = content;
+    msg.innerText = content.toString();
     div.appendChild(msg);
-    confirm.innerText = confirmText || "确认";
-    cancel.innerText = cancelText || "取消";
+    confirm.innerText = confirmText ? confirmText.toString() : "确认";
+    cancel.innerText = cancelText ? cancelText.toString() : "取消";
 
     const removeConfirm = () => {
       document.body.removeChild(mask);
@@ -270,7 +281,7 @@ const PandoraAPI = class {
     this.text = str => {
       const ele = this.get;
       if (str) {
-        ele.innerText = str;
+        ele.innerText = str.toString();
       } else {
         return ele.innerText;
       }
@@ -353,7 +364,10 @@ const PandoraAPI = class {
     //是否拥有class名
     this.hasClass = name => {
       const ele = this.get;
-      const classlist = ele.classList.value.indexOf(" ") > -1 ? ele.classList.value.split(" ") : ele.classList.value;
+      const classlist =
+        ele.classList.value.indexOf(" ") > -1
+          ? ele.classList.value.split(" ")
+          : ele.classList.value;
       if (classlist.indexOf(name) > -1) {
         return !0;
       } else {
@@ -508,7 +522,8 @@ const PandoraAPI = class {
     };
     //隐藏
     this.hide = callback => {
-      if (!this.attr("beforeHide")) this.attr("beforeHide", this.css("display"));
+      if (!this.attr("beforeHide"))
+        this.attr("beforeHide", this.css("display"));
       this.css({ display: "none" });
       callback && setTimeout(callback, 0);
       return this;
@@ -540,7 +555,9 @@ const PandoraAPI = class {
         if (config.data)
           params = Object.keys(config.data)
             .map(key => {
-              return `${encodeURIComponent(key)}=${encodeURIComponent(config.data[key])}`;
+              return `${encodeURIComponent(key)}=${encodeURIComponent(
+                config.data[key]
+              )}`;
             })
             .join("&");
       } else {
@@ -548,7 +565,11 @@ const PandoraAPI = class {
       }
 
       http.onload = () => {
-        if (http.status === 200 || http.statusText === "OK" || http.readyState === 4) {
+        if (
+          http.status === 200 ||
+          http.statusText === "OK" ||
+          http.readyState === 4
+        ) {
           const res = http.response;
           try {
             JSON.parse(res);
@@ -567,7 +588,11 @@ const PandoraAPI = class {
           http.setRequestHeader(keys, config.headers[keys]);
         }
       } else {
-        if (config.dataType == "json") http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        if (config.dataType == "json")
+          http.setRequestHeader(
+            "Content-type",
+            "application/x-www-form-urlencoded"
+          );
       }
 
       http.send(params);
@@ -598,7 +623,9 @@ const PandoraAPI = class {
 
       fetch(config.url, {
         body: params,
-        headers: config.headers || { "Content-type": "application/x-www-form-urlencoded" },
+        headers: config.headers || {
+          "Content-type": "application/x-www-form-urlencoded",
+        },
         method: config.type.toLocaleUpperCase(),
       })
         .then(res => {
@@ -668,7 +695,9 @@ const PandoraAPI = class {
     this.hashChange = callback => {
       const getRoutePath = () => {
         if (location.hash.indexOf("#") > -1) {
-          return location.hash.match(/#(\S*)\?/) == null ? location.hash.match(/#(\S*)/)[1] : location.hash.match(/#(\S*)\?/)[1];
+          return location.hash.match(/#(\S*)\?/) == null
+            ? location.hash.match(/#(\S*)/)[1]
+            : location.hash.match(/#(\S*)\?/)[1];
         } else {
           return !1;
         }
@@ -730,7 +759,9 @@ const PandoraJs = (SuperClass = null) => {
         return new Promise(next => {
           Html = bHtml;
           for (let value of matchValue) {
-            for (let keyName in config.data) value === keyName && (Html = Html.replace(patterns, config.data[value] || ""));
+            for (let keyName in config.data)
+              value === keyName &&
+                (Html = Html.replace(patterns, config.data[value] || ""));
           }
           this.html(Html);
           next();
@@ -963,10 +994,14 @@ const PandoraJs = (SuperClass = null) => {
           default:
             switch (config.Direction) {
               case "horizontal":
-                parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
+                parentEle.style.transform = `translate3d(${
+                  -1 * (childW * cur)
+                }px,0,0)`;
                 break;
               case "vertical":
-                parentEle.style.transform = `translate3d(0,${-1 * (childH * cur)}px,0)`;
+                parentEle.style.transform = `translate3d(0,${
+                  -1 * (childH * cur)
+                }px,0)`;
                 break;
             }
             break;
@@ -984,7 +1019,8 @@ const PandoraJs = (SuperClass = null) => {
 
       //分页器
       const Pagination = current => {
-        for (let e of childEle) e.className = e.className.replace("active", "").trim();
+        for (let e of childEle)
+          e.className = e.className.replace("active", "").trim();
         if (childEle[cur].className) {
           childEle[cur].className += " active";
         } else {
@@ -992,22 +1028,40 @@ const PandoraJs = (SuperClass = null) => {
         }
         if (config.Pagination) {
           if (parentEle.parentElement.querySelector(".Pd-pagination")) {
-            parentEle.parentElement.removeChild(parentEle.parentElement.querySelector(".Pd-pagination"));
+            parentEle.parentElement.removeChild(
+              parentEle.parentElement.querySelector(".Pd-pagination")
+            );
           }
           let pager = document.createElement("div");
           pager.className = "Pd-pagination";
 
           for (let a = 0; a < total; a++) {
             let pageChild = document.createElement("a"),
-              textNode = childEle[a].getAttribute("data-title") ? document.createTextNode(childEle[a].getAttribute("data-title")) : document.createTextNode(a);
+              textNode = childEle[a].getAttribute("data-title")
+                ? document.createTextNode(
+                    childEle[a].getAttribute("data-title")
+                  )
+                : document.createTextNode(a);
             pageChild.setAttribute("href", "javascript:void 0");
             if (a === current) pageChild.className = "active";
             pageChild.appendChild(textNode);
             pager.appendChild(pageChild);
           }
-          parentEle.parentElement.insertBefore(pager, parentEle.nextElementSibling);
-          for (let a = 0; a < parentEle.parentElement.querySelector(".Pd-pagination").querySelectorAll("a").length; a++) {
-            let e = parentEle.parentElement.querySelector(".Pd-pagination").querySelectorAll("a")[a];
+          parentEle.parentElement.insertBefore(
+            pager,
+            parentEle.nextElementSibling
+          );
+          for (
+            let a = 0;
+            a <
+            parentEle.parentElement
+              .querySelector(".Pd-pagination")
+              .querySelectorAll("a").length;
+            a++
+          ) {
+            let e = parentEle.parentElement
+              .querySelector(".Pd-pagination")
+              .querySelectorAll("a")[a];
             let idx = a;
             e.onclick = () => {
               cur = idx;
@@ -1048,7 +1102,11 @@ const PandoraJs = (SuperClass = null) => {
       let startX, startY, endX, endY, curX, curY;
       //方法：滑动开始
       const touchStart = event => {
-        if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
+        if (
+          event.target.getAttribute("data-cancel") ||
+          event.target.tagName.toUpperCase() == "A"
+        )
+          return !1;
         event.preventDefault();
         clearTimeout(AutoTimeout);
         cancelAnimationFrame(AutoPlayFrame);
@@ -1068,7 +1126,11 @@ const PandoraJs = (SuperClass = null) => {
 
       //方法：滑动中
       const touchMove = event => {
-        if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
+        if (
+          event.target.getAttribute("data-cancel") ||
+          event.target.tagName.toUpperCase() == "A"
+        )
+          return !1;
         let { pageX, pageY } = event.changedTouches[0];
         let { left, top } = parentEle.parentElement.getBoundingClientRect();
         curX = pageX - left;
@@ -1076,22 +1138,33 @@ const PandoraJs = (SuperClass = null) => {
 
         switch (config.Effect) {
           case "fade":
-            for (let cur of childEle) cur.style.transition = `opacity ${config.Speed}s linear`;
+            for (let cur of childEle)
+              cur.style.transition = `opacity ${config.Speed}s linear`;
             break;
           default:
             switch (config.Direction) {
               case "horizontal":
                 if (startX > curX) {
-                  parentEle.style.transform = `translate3d(${-1 * (startX - curX + childW * cur)}px,0,0)`;
+                  parentEle.style.transform = `translate3d(${
+                    -1 * (startX - curX + childW * cur)
+                  }px,0,0)`;
                 } else {
-                  parentEle.style.transform = `translate3d(${-1 * (childW * cur) + Math.abs(curX - startX)}px,0,0)`;
+                  parentEle.style.transform = `translate3d(${
+                    -1 * (childW * cur) + Math.abs(curX - startX)
+                  }px,0,0)`;
                 }
                 break;
               case "vertical":
                 if (startY > curY) {
-                  if (cur != total - 1) parentEle.style.transform = `translate3d(0,${-1 * (startY - curY + childH * cur)}px,0)`;
+                  if (cur != total - 1)
+                    parentEle.style.transform = `translate3d(0,${
+                      -1 * (startY - curY + childH * cur)
+                    }px,0)`;
                 } else {
-                  if (cur != 0) parentEle.style.transform = `translate3d(0,${-1 * (childH * cur) + Math.abs(curY - startY)}px,0)`;
+                  if (cur != 0)
+                    parentEle.style.transform = `translate3d(0,${
+                      -1 * (childH * cur) + Math.abs(curY - startY)
+                    }px,0)`;
                 }
                 break;
             }
@@ -1101,7 +1174,11 @@ const PandoraJs = (SuperClass = null) => {
 
       //方法：滑动结束
       const touchEnd = event => {
-        if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
+        if (
+          event.target.getAttribute("data-cancel") ||
+          event.target.tagName.toUpperCase() == "A"
+        )
+          return !1;
         clearTimeout(AutoTimeout);
         AutoPlay();
         parentEle.style.transition = `transform ${config.Speed}s ${config.Curve}`;
@@ -1113,9 +1190,15 @@ const PandoraJs = (SuperClass = null) => {
             endX = pageX - left;
             switch (config.Effect) {
               case "fade":
-                if (startX - endX > childW / config.Distance && cur === total - 1) {
+                if (
+                  startX - endX > childW / config.Distance &&
+                  cur === total - 1
+                ) {
                   cur = 0;
-                } else if (startX - endX > childW / config.Distance && cur < total - 1) {
+                } else if (
+                  startX - endX > childW / config.Distance &&
+                  cur < total - 1
+                ) {
                   Next();
                 } else if (endX - startX > childW / config.Distance) {
                   Prev();
@@ -1128,9 +1211,12 @@ const PandoraJs = (SuperClass = null) => {
                 Swiper();
                 break;
               default:
-                if (startX - endX > childW / config.Distance && cur < total - 1) Next();
+                if (startX - endX > childW / config.Distance && cur < total - 1)
+                  Next();
                 if (endX - startX > childW / config.Distance) Prev();
-                parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
+                parentEle.style.transform = `translate3d(${
+                  -1 * (childW * cur)
+                }px,0,0)`;
                 break;
             }
             break;
@@ -1138,9 +1224,15 @@ const PandoraJs = (SuperClass = null) => {
             endY = pageY - top;
             switch (config.Effect) {
               case "fade":
-                if (startY - endY > childH / config.Distance && cur === total - 1) {
+                if (
+                  startY - endY > childH / config.Distance &&
+                  cur === total - 1
+                ) {
                   cur = 0;
-                } else if (startY - endY > childH / config.Distance && cur < total - 1) {
+                } else if (
+                  startY - endY > childH / config.Distance &&
+                  cur < total - 1
+                ) {
                   Next();
                 } else if (endY - startY > childH / config.Distance) {
                   Prev();
@@ -1153,9 +1245,12 @@ const PandoraJs = (SuperClass = null) => {
                 Swiper();
                 break;
               default:
-                if (startY - endY > childH / config.Distance && cur < total - 1) Next();
+                if (startY - endY > childH / config.Distance && cur < total - 1)
+                  Next();
                 if (endY - startY > childH / config.Distance) Prev();
-                parentEle.style.transform = `translate3d(0,${-1 * (childH * cur)}px,0)`;
+                parentEle.style.transform = `translate3d(0,${
+                  -1 * (childH * cur)
+                }px,0)`;
                 break;
             }
             break;
@@ -1224,8 +1319,10 @@ const PandoraJs = (SuperClass = null) => {
               //移除事件
               Swiper(config.InitPage);
               AutoPlay();
-              config.Inertia && parentEle.removeEventListener("touchmove", touchMove);
-              config.Scroll && parentEle.removeEventListener("mousewheel", scrollMove);
+              config.Inertia &&
+                parentEle.removeEventListener("touchmove", touchMove);
+              config.Scroll &&
+                parentEle.removeEventListener("mousewheel", scrollMove);
               parentEle.removeEventListener("touchstart", touchStart);
               parentEle.removeEventListener("touchend", touchEnd);
               next();
@@ -1233,8 +1330,10 @@ const PandoraJs = (SuperClass = null) => {
           })
           .then(() => {
             //添加事件
-            config.Inertia && parentEle.addEventListener("touchmove", touchMove);
-            config.Scroll && parentEle.addEventListener("mousewheel", scrollMove);
+            config.Inertia &&
+              parentEle.addEventListener("touchmove", touchMove);
+            config.Scroll &&
+              parentEle.addEventListener("mousewheel", scrollMove);
             parentEle.addEventListener("touchstart", touchStart);
             parentEle.addEventListener("touchend", touchEnd);
             if (config.Hover) {
@@ -1278,7 +1377,10 @@ const PandoraJs = (SuperClass = null) => {
           `width=${config.PageSize},initial-scale=${config.InitScale},minimum-scale=${config.MinScale},maximum-scale=${config.MaxScale},user-scalable=no,viewport-fit=cover`
         );
       } else {
-        meta.setAttribute("content", `width=${config.PageSize},user-scalable=no,viewport-fit=cover`);
+        meta.setAttribute(
+          "content",
+          `width=${config.PageSize},user-scalable=no,viewport-fit=cover`
+        );
       }
       new PandoraAPI("head").get.appendChild(meta);
 
@@ -1342,10 +1444,15 @@ const PandoraJs = (SuperClass = null) => {
       let mask = document.createElement("div"),
         parent = this.get.parentElement;
       mask.className = "Pd-Mask";
-      const confirmBtn = config.Confirm.btn ? new PandoraAPI(config.Confirm.btn) : null,
-        cancelBtn = config.Cancel.btn ? new PandoraAPI(config.Cancel.btn) : null;
+      const confirmBtn = config.Confirm.btn
+          ? new PandoraAPI(config.Confirm.btn)
+          : null,
+        cancelBtn = config.Cancel.btn
+          ? new PandoraAPI(config.Cancel.btn)
+          : null;
 
-      if (config.Direction !== "none") this.css({ transition: `all ${config.Speed}ms ${config.Curve}` });
+      if (config.Direction !== "none")
+        this.css({ transition: `all ${config.Speed}ms ${config.Curve}` });
 
       //关闭弹框
       const closeDialog = () => {
@@ -1370,7 +1477,15 @@ const PandoraJs = (SuperClass = null) => {
       const Effect = where => {
         if (config.mask) {
           parent.insertBefore(mask, this.get.nextElementSibling);
-          new PandoraAPI(".Pd-Mask").css({ width: "100vw", height: "100vh", background: config.maskColor, position: "fixed", top: 0, left: 0, "z-index": 998 });
+          new PandoraAPI(".Pd-Mask").css({
+            width: "100vw",
+            height: "100vh",
+            background: config.maskColor,
+            position: "fixed",
+            top: 0,
+            left: 0,
+            "z-index": 998,
+          });
         }
 
         switch (where) {
@@ -1421,16 +1536,40 @@ const PandoraJs = (SuperClass = null) => {
                   left = parseInt(this.css("width")) / 2;
                 switch (config.Direction) {
                   case "none":
-                    this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                    this.css({
+                      position: "fixed",
+                      top: `calc(50% - ${top}px)`,
+                      left: `calc(50% - ${left}px)`,
+                      "z-index": 999,
+                      transform: "translate3d(0,0,0) scale(1)",
+                    });
                     break;
                   case "zoom":
-                    this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                    this.css({
+                      position: "fixed",
+                      top: `calc(50% - ${top}px)`,
+                      left: `calc(50% - ${left}px)`,
+                      "z-index": 999,
+                      transform: "translate3d(0,0,0) scale(1)",
+                    });
                     break;
                   case "top":
-                    this.css({ position: "fixed", top: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                    this.css({
+                      position: "fixed",
+                      top: 0,
+                      left: `calc(50% - ${left}px)`,
+                      "z-index": 999,
+                      transform: "translate3d(0,0,0) scale(1)",
+                    });
                     break;
                   case "bottom":
-                    this.css({ position: "fixed", bottom: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                    this.css({
+                      position: "fixed",
+                      bottom: 0,
+                      left: `calc(50% - ${left}px)`,
+                      "z-index": 999,
+                      transform: "translate3d(0,0,0) scale(1)",
+                    });
                     break;
                 }
               };
@@ -1489,7 +1628,9 @@ const PandoraJs = (SuperClass = null) => {
 
       for (let e of this.getEle("*")) {
         if (e.nodeName.toLowerCase() == "img") e.src && ImgArr.push(e.src);
-        const getBg = window.getComputedStyle(e).getPropertyValue("background-image");
+        const getBg = window
+          .getComputedStyle(e)
+          .getPropertyValue("background-image");
         if (getBg.indexOf("url") > -1 && getBg != "none") {
           const url1 = getBg.match(pattern),
             url2 = getBg.match(pattern2),
@@ -1500,8 +1641,10 @@ const PandoraJs = (SuperClass = null) => {
           if (url3) {
             let src = url3[0].toString().replace(/\(/, "");
             src = src.replace(/\)/, "");
-            if (src.match(pattern)) src = src.match(pattern)[0].toString().replace(/"/g, "");
-            if (src.match(pattern2)) src = src.match(pattern2)[0].toString().replace(/'/g, "");
+            if (src.match(pattern))
+              src = src.match(pattern)[0].toString().replace(/"/g, "");
+            if (src.match(pattern2))
+              src = src.match(pattern2)[0].toString().replace(/'/g, "");
             ImgArr.push(src);
           }
         }
@@ -1596,7 +1739,10 @@ const PandoraJs = (SuperClass = null) => {
       config = this.extend(config, options);
       const innerHtml = this.html();
       this.empty();
-      this.get.insertAdjacentHTML("afterbegin", `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`);
+      this.get.insertAdjacentHTML(
+        "afterbegin",
+        `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`
+      );
       let uploadBtn = document.createElement("input"),
         userId,
         total = config.Max,
@@ -1792,14 +1938,20 @@ const PandoraJs = (SuperClass = null) => {
           imgArr = Array.prototype.slice.call(imgRealArr);
         imgArr.forEach((cur, idx) => {
           let current = imgRealArr[idx];
-          JSON.parse(current.getAttribute("Pd-move")) && current.parentElement.removeChild(current);
+          JSON.parse(current.getAttribute("Pd-move")) &&
+            current.parentElement.removeChild(current);
         });
       };
 
       //设置参数
       const setConfig = (ele, eleConfig) => {
-        for (let a of ele.querySelectorAll(".Pd-ImgTransit-btn")) a.style.transform = `scale(${1 / (eleConfig.scale / 100)}) rotate(${-1 * eleConfig.rotate}deg)`;
-        return (ele.style.transform = `translate3d(${eleConfig.translate}) scale(${eleConfig.scale / 100}) rotate(${eleConfig.rotate}deg)`);
+        for (let a of ele.querySelectorAll(".Pd-ImgTransit-btn"))
+          a.style.transform = `scale(${1 / (eleConfig.scale / 100)}) rotate(${
+            -1 * eleConfig.rotate
+          }deg)`;
+        return (ele.style.transform = `translate3d(${
+          eleConfig.translate
+        }) scale(${eleConfig.scale / 100}) rotate(${eleConfig.rotate}deg)`);
       };
 
       //获取中心
@@ -1826,7 +1978,9 @@ const PandoraJs = (SuperClass = null) => {
           eleReal[idx].style.position = "absolute";
           eleReal[idx].style.top = "50%";
           eleReal[idx].style.left = "50%";
-          eleReal[idx].style.margin = `-${h / 2 + config.padding}px 0 0 -${w / 2 + config.padding}px`;
+          eleReal[idx].style.margin = `-${h / 2 + config.padding}px 0 0 -${
+            w / 2 + config.padding
+          }px`;
           eleReal[idx].style.zIndex = idx + 1;
           eleReal[idx].style.padding = `${config.padding}px`;
 
@@ -1846,7 +2000,11 @@ const PandoraJs = (SuperClass = null) => {
 
           touchStart = event => {
             event.preventDefault();
-            if (JSON.parse(event.target.getAttribute("pd-move")) || JSON.parse(event.target.parentElement.getAttribute("pd-move"))) eleReal[idx].querySelector("img").style.transform = "scale(1.04)";
+            if (
+              JSON.parse(event.target.getAttribute("pd-move")) ||
+              JSON.parse(event.target.parentElement.getAttribute("pd-move"))
+            )
+              eleReal[idx].querySelector("img").style.transform = "scale(1.04)";
             config.callback &&
               config.callback({
                 type: "choose",
@@ -1867,14 +2025,22 @@ const PandoraJs = (SuperClass = null) => {
                   nowY = event.changedTouches[0].pageY,
                   w = event.target.getBoundingClientRect().width,
                   h = event.target.getBoundingClientRect().height,
-                  icon = event.target.parentElement.querySelectorAll(".Pd-ImgTransit-btn")[0].getBoundingClientRect(),
+                  icon = event.target.parentElement
+                    .querySelectorAll(".Pd-ImgTransit-btn")[0]
+                    .getBoundingClientRect(),
                   iconW = icon.width / 2;
                 touchX = nowX - startX;
                 touchY = nowY - startY;
-                let getBounding = eleReal[idx].parentElement.getBoundingClientRect(),
+                let getBounding = eleReal[
+                    idx
+                  ].parentElement.getBoundingClientRect(),
                   parentBox = {
-                    width: config.bounds ? getBounding.width + config.outBounds : getBounding.width,
-                    height: config.bounds ? getBounding.height + config.outBounds : getBounding.height,
+                    width: config.bounds
+                      ? getBounding.width + config.outBounds
+                      : getBounding.width,
+                    height: config.bounds
+                      ? getBounding.height + config.outBounds
+                      : getBounding.height,
                   };
 
                 if (config.bounds) {
@@ -1885,7 +2051,10 @@ const PandoraJs = (SuperClass = null) => {
                       touchX = parentBox.width / 2 - w / 2 - iconW;
                     }
                   }
-                  if (Math.abs(touchY) >= parentBox.height / 2 - h / 2 - iconW) {
+                  if (
+                    Math.abs(touchY) >=
+                    parentBox.height / 2 - h / 2 - iconW
+                  ) {
                     if (touchY < 0) {
                       touchY = -1 * (parentBox.height / 2 - h / 2 - iconW);
                     } else {
@@ -1896,7 +2065,8 @@ const PandoraJs = (SuperClass = null) => {
                 eleConfig[idx].translate = `${touchX}px,${touchY}px,0`;
                 setConfig(eleReal[idx], eleConfig[idx]);
               };
-              config.callback && config.callback({ type: "move", obj: eleReal[idx] });
+              config.callback &&
+                config.callback({ type: "move", obj: eleReal[idx] });
               canMove && changePosition();
             }
           };
@@ -1905,7 +2075,9 @@ const PandoraJs = (SuperClass = null) => {
             event.stopImmediatePropagation();
             event.preventDefault();
             if (canMove) {
-              let x = event.changedTouches[0].pageX - eleReal[idx].getBoundingClientRect().left;
+              let x =
+                event.changedTouches[0].pageX -
+                eleReal[idx].getBoundingClientRect().left;
               if (x > 0 && eleConfig[idx].scale > config.scale.min) {
                 eleConfig[idx].scale -= config.scale.rate;
               }
@@ -1917,9 +2089,11 @@ const PandoraJs = (SuperClass = null) => {
             if (event.touches.length >= 2) {
               if (config.scale.enable) {
                 if (event.scale > prevScale) {
-                  if (eleConfig[idx].scale < config.scale.max) eleConfig[idx].scale += event.scale;
+                  if (eleConfig[idx].scale < config.scale.max)
+                    eleConfig[idx].scale += event.scale;
                 } else {
-                  if (eleConfig[idx].scale > config.scale.min) eleConfig[idx].scale -= event.scale * 10;
+                  if (eleConfig[idx].scale > config.scale.min)
+                    eleConfig[idx].scale -= event.scale * 10;
                 }
               }
 
@@ -1932,18 +2106,25 @@ const PandoraJs = (SuperClass = null) => {
               }
             }
             setConfig(eleReal[idx], eleConfig[idx]);
-            config.callback && config.callback({ type: "resize", obj: eleReal[idx] });
+            config.callback &&
+              config.callback({ type: "resize", obj: eleReal[idx] });
           };
           //旋转事件
           touchRotate = event => {
             event.stopImmediatePropagation();
             event.preventDefault();
             const changeRotate = () => {
-              let angle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x);
-              eleConfig[idx].rotate = Math.floor(((angle - prevAngle) * 180) / Math.PI) * config.rotate.rate;
+              let angle = Math.atan2(
+                event.changedTouches[0].pageY - centerPoint.y,
+                event.changedTouches[0].pageX - centerPoint.x
+              );
+              eleConfig[idx].rotate =
+                Math.floor(((angle - prevAngle) * 180) / Math.PI) *
+                config.rotate.rate;
               setConfig(eleReal[idx], eleConfig[idx]);
             };
-            config.callback && config.callback({ type: "rotate", obj: eleReal[idx] });
+            config.callback &&
+              config.callback({ type: "rotate", obj: eleReal[idx] });
             canMove && changeRotate();
           };
           //删除事件
@@ -1956,7 +2137,8 @@ const PandoraJs = (SuperClass = null) => {
               eleConfig[idx].scale = 100;
               setConfig(eleReal[idx], eleConfig[idx]);
               eleReal[idx].style.display = "none";
-              config.callback && config.callback({ type: "delete", obj: eleReal[idx] });
+              config.callback &&
+                config.callback({ type: "delete", obj: eleReal[idx] });
             };
             canMove && deleteObj();
           };
@@ -1972,15 +2154,30 @@ const PandoraJs = (SuperClass = null) => {
               }
             });
           }
-          if (config.icon && config.scale.enable) eleReal[idx].querySelectorAll(`.Pd-resize`)[0].addEventListener("touchmove", touchResize);
+          if (config.icon && config.scale.enable)
+            eleReal[idx]
+              .querySelectorAll(`.Pd-resize`)[0]
+              .addEventListener("touchmove", touchResize);
           if (config.icon && config.rotate.enable) {
-            eleReal[idx].querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchstart", event => {
-              centerPoint = getCenterPoint(eleReal[idx]);
-              prevAngle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x) - (eleConfig[idx].rotate * Math.PI) / 180;
-            });
-            eleReal[idx].querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchmove", touchRotate);
+            eleReal[idx]
+              .querySelectorAll(`.Pd-rotate`)[0]
+              .addEventListener("touchstart", event => {
+                centerPoint = getCenterPoint(eleReal[idx]);
+                prevAngle =
+                  Math.atan2(
+                    event.changedTouches[0].pageY - centerPoint.y,
+                    event.changedTouches[0].pageX - centerPoint.x
+                  ) -
+                  (eleConfig[idx].rotate * Math.PI) / 180;
+              });
+            eleReal[idx]
+              .querySelectorAll(`.Pd-rotate`)[0]
+              .addEventListener("touchmove", touchRotate);
           }
-          if (config.icon && config.delete) eleReal[idx].querySelectorAll(`.Pd-delete`)[0].addEventListener("touchstart", touchDelete);
+          if (config.icon && config.delete)
+            eleReal[idx]
+              .querySelectorAll(`.Pd-delete`)[0]
+              .addEventListener("touchstart", touchDelete);
 
           //隐藏操作按钮
           const hideBtn = () => {
@@ -2009,11 +2206,17 @@ const PandoraJs = (SuperClass = null) => {
             if (config.icon) {
               hideBtn();
               event.stopImmediatePropagation();
-              JSON.parse(event.target.getAttribute("pd-move")) && showBtn(event.target);
-              if (event.target.parentElement) JSON.parse(event.target.parentElement.getAttribute("pd-move")) && showBtn(event.target.parentElement);
+              JSON.parse(event.target.getAttribute("pd-move")) &&
+                showBtn(event.target);
+              if (event.target.parentElement)
+                JSON.parse(
+                  event.target.parentElement.getAttribute("pd-move")
+                ) && showBtn(event.target.parentElement);
             } else {
               if (event.target.parentElement) {
-                if (JSON.parse(event.target.parentElement.getAttribute("pd-move"))) {
+                if (
+                  JSON.parse(event.target.parentElement.getAttribute("pd-move"))
+                ) {
                   canMove = !0;
                 } else {
                   canMove = !1;
@@ -2034,11 +2237,18 @@ const PandoraJs = (SuperClass = null) => {
             config.rotate.enable && (btn += icon.rotate);
             config.delete && (btn += icon.delete);
           }
-          this.append(`<div class="Pd-ImgTransit" Pd-index="${imgIndex[idx]}">${btn}</div>`);
+          this.append(
+            `<div class="Pd-ImgTransit" Pd-index="${imgIndex[idx]}">${btn}</div>`
+          );
           let imgCon = this.get.querySelectorAll(".Pd-ImgTransit")[idx];
           cur.style.transition = "transform .4s ease-in";
           [].slice.call(cur.attributes).forEach(attrs => {
-            if (attrs.name !== "style" && attrs.name !== "id" && attrs.name !== "class") imgCon.setAttribute(attrs.name, attrs.value);
+            if (
+              attrs.name !== "style" &&
+              attrs.name !== "id" &&
+              attrs.name !== "class"
+            )
+              imgCon.setAttribute(attrs.name, attrs.value);
           });
           imgCon.appendChild(cur);
           cur.removeAttribute("Pd-move");
@@ -2079,7 +2289,8 @@ const PandoraJs = (SuperClass = null) => {
       };
       config = this.extend(config, options);
       let sdk = "//pandorajs.com/other/weixin.js";
-      if (location.protocol === "file:") sdk = "//pandorajs.com/other/weixin.js";
+      if (location.protocol === "file:")
+        sdk = "//pandorajs.com/other/weixin.js";
       const scriptTag = document.createElement("script");
       scriptTag.id = "Pd_share";
       scriptTag.src = sdk;
@@ -2089,7 +2300,12 @@ const PandoraJs = (SuperClass = null) => {
       } else {
         document.body.appendChild(scriptTag);
       }
-      let jsApiList = ["onMenuShareTimeline", "onMenuShareAppMessage", "updateTimelineShareData", "updateAppMessageShareData"];
+      let jsApiList = [
+        "onMenuShareTimeline",
+        "onMenuShareAppMessage",
+        "updateTimelineShareData",
+        "updateAppMessageShareData",
+      ];
       if (config.jsApiList) {
         config.jsApiList.map(e => {
           jsApiList.push(e);
@@ -2106,18 +2322,33 @@ const PandoraJs = (SuperClass = null) => {
 
       const success = res => {
         const { appId, timestamp, nonceStr, signature } = res;
-        wx.config({ debug: config.debug, appId, timestamp, nonceStr, signature, jsApiList });
+        wx.config({
+          debug: config.debug,
+          appId,
+          timestamp,
+          nonceStr,
+          signature,
+          jsApiList,
+        });
         wx.ready(() => {
           new Promise(next => {
             const timeLine = {
                 title: isObj(config.title) ? config.title[0] : config.title,
-                link: isObj(config.shareLinks) ? config.shareLinks[0] : config.shareLinks,
-                imgUrl: isObj(config.sharePics) ? config.sharePics[0] : config.sharePics,
+                link: isObj(config.shareLinks)
+                  ? config.shareLinks[0]
+                  : config.shareLinks,
+                imgUrl: isObj(config.sharePics)
+                  ? config.sharePics[0]
+                  : config.sharePics,
               },
               friend = {
                 title: isObj(config.title) ? config.title[1] : config.title,
-                link: isObj(config.shareLinks) ? config.shareLinks[1] : config.shareLinks,
-                imgUrl: isObj(config.sharePics) ? config.sharePics[1] : config.sharePics,
+                link: isObj(config.shareLinks)
+                  ? config.shareLinks[1]
+                  : config.shareLinks,
+                imgUrl: isObj(config.sharePics)
+                  ? config.sharePics[1]
+                  : config.sharePics,
               };
 
             if (wx.onMenuShareTimeline) {
@@ -2127,17 +2358,37 @@ const PandoraJs = (SuperClass = null) => {
             } else {
               const { title, link, imgUrl } = timeLine;
               const { success, error } = config.callback;
-              wx.updateTimelineShareData({ title, link, imgUrl, success, error });
+              wx.updateTimelineShareData({
+                title,
+                link,
+                imgUrl,
+                success,
+                error,
+              });
             }
 
             if (wx.onMenuShareAppMessage) {
               const { title, link, imgUrl } = friend;
               const { success, error } = config.callback;
-              wx.onMenuShareAppMessage({ title, desc: config.desc, link, imgUrl, success, error });
+              wx.onMenuShareAppMessage({
+                title,
+                desc: config.desc,
+                link,
+                imgUrl,
+                success,
+                error,
+              });
             } else {
               const { title, link, imgUrl } = friend;
               const { success, error } = config.callback;
-              wx.updateAppMessageShareData({ title, desc, link, imgUrl, success, error });
+              wx.updateAppMessageShareData({
+                title,
+                desc,
+                link,
+                imgUrl,
+                success,
+                error,
+              });
             }
             next();
           }).then(config.callback.ready);
@@ -2145,7 +2396,10 @@ const PandoraJs = (SuperClass = null) => {
       };
 
       scriptTag.onload = () => {
-        this.fetch({ url: `${config.apiUrl}${encodeURIComponent(location.href)}`, success: success });
+        this.fetch({
+          url: `${config.apiUrl}${encodeURIComponent(location.href)}`,
+          success: success,
+        });
       };
       return this;
     }
@@ -2188,7 +2442,8 @@ const PandoraJs = (SuperClass = null) => {
               img.dataset.width && img.removeAttribute("data-width");
               img.dataset.height && img.removeAttribute("data-height");
               cur++;
-              if (cur == lazyArr.length) window.removeEventListener("scroll", checker);
+              if (cur == lazyArr.length)
+                window.removeEventListener("scroll", checker);
             };
 
             img.onerror = () => {
@@ -2214,7 +2469,9 @@ const Pandora = class extends PandoraJs(PandoraAPI) {
 window.Pandora = Pandora;
 try {
   jQuery;
-  console.warn("[兼容] 判断到页面中存在JQuery,请注意改写此组件的调用方式为 new Pandora()");
+  console.warn(
+    "[兼容] 判断到页面中存在JQuery,请注意改写此组件的调用方式为 new Pandora()"
+  );
 } catch (err) {
   window.$ = element => {
     return new Pandora(element);
