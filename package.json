@@ -153,6 +153,7 @@
     "fragment-cache": "^0.2.1",
     "fs-readdir-recursive": "^1.1.0",
     "fs.realpath": "^1.0.0",
+    "ftp": "^0.3.10",
     "function-bind": "^1.1.1",
     "get-caller-file": "^1.0.3",
     "get-value": "^2.0.6",
@@ -164,6 +165,7 @@
     "globals": "^9.18.0",
     "graceful-fs": "^4.2.4",
     "gulp": "^4.0.2",
+    "gulp-chinese2unicode": "^1.0.1",
     "gulp-header": "^2.0.9",
     "gulp-uglify": "^3.0.2",
     "has": "^1.0.3",
@@ -408,10 +410,12 @@
   },
   "devDependencies": {},
   "scripts": {
-    "build": "npm run pack && npm run babel && npm run minjs",
+    "release": "npm run pack && npm run babel && npm run remote",
+    "prePush": "npm run pack && npm run babel && npm run local",
     "pack": "webpack webpack.config.js",
     "babel": "babel Pandora.min.js --out-file Pandora.min.js",
-    "minjs": "gulp minifyjs"
+    "local": "gulp local",
+    "remote": "gulp remote"
   },
   "repository": {
     "type": "git",
