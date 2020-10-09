@@ -2,24 +2,19 @@ const templatePolyfill = require("template-polyfill");
 require("core-js/es6/promise");
 require("core-js/es6/object");
 require("core-js/es6/symbol");
+require("core-js/es6/array");
+require("core-js/es6/string");
 const icoConfig = require("./src/icoConfig.json");
 
 (() => {
-  // 启用插件追踪
-  window.disableTrack = !0;
   //兼容处理&&基础方法
+  // 启用插件追踪
+  window.enableTrack = !0;
 
   // PROTO: 是否符合追踪条件
   const canTrack = () => {
     const domain = document.domain || "local";
-    if (
-      window.disableTrack &&
-      domain.indexOf("pandorajs.com") < 0 &&
-      domain.indexOf("192.168") < 0 &&
-      domain != "local" &&
-      domain != "localhost" &&
-      domain != "127.0.0.1"
-    ) {
+    if (window.enableTrack && domain.indexOf("pandorajs.com") < 0 && domain.indexOf("192.168") < 0 && domain != "local" && domain != "localhost" && domain != "127.0.0.1") {
       return !0;
     }
     return !1;
@@ -30,7 +25,7 @@ const icoConfig = require("./src/icoConfig.json");
     window.requestAnimationFrame = callback => {
       let currTime = new Date().getTime(),
         timeToCall = Math.max(0, 16 - (currTime - lastTime)),
-        id = window.setTimeout(() => {
+        id = setTimeout(() => {
           callback(currTime + timeToCall);
         }, timeToCall);
       lastTime = currTime + timeToCall;
@@ -44,29 +39,21 @@ const icoConfig = require("./src/icoConfig.json");
 
   //获取CSS变量
   const getRoot = name => {
-    return getComputedStyle(document.documentElement).getPropertyValue(
-      `--${name}`
-    );
+    return window.getComputedStyle(document.documentElement).getPropertyValue(`--${name}`);
   };
 
   let rootText = "";
   if (!getRoot("alertTheme")) rootText += "/*alert背景*/--alertTheme:inherit;";
   if (!getRoot("alertBg")) rootText += "/*alert遮罩*/--alertBg:inherit;";
-  if (!getRoot("alertFontSize"))
-    rootText += "/*alert字体大小*/--alertFontSize:1rem;";
+  if (!getRoot("alertFontSize")) rootText += "/*alert字体大小*/--alertFontSize:1rem;";
   if (!getRoot("alertColor")) rootText += "/*alert字体颜色*/--alertColor:#000;";
 
-  if (!getRoot("confirmTheme"))
-    rootText += "/*confirm背景*/--confirmTheme:inherit;";
+  if (!getRoot("confirmTheme")) rootText += "/*confirm背景*/--confirmTheme:inherit;";
   if (!getRoot("confirmBg")) rootText += "/*confirm遮罩*/--confirmBg:inherit;";
-  if (!getRoot("confirmBtnBg"))
-    rootText += "/*confirm按钮背景*/--confirmBtnBg:#333366;";
-  if (!getRoot("confirmFontSize"))
-    rootText += "/*confirm字体大小*/--confirmFontSize:1rem;";
-  if (!getRoot("confirmColor"))
-    rootText += "/*confirm字体颜色*/--confirmColor:#000;";
-  if (!getRoot("confirmBtnColor"))
-    rootText += "/*confirm按钮字体颜色*/--confirmBtnColor:#fff;";
+  if (!getRoot("confirmBtnBg")) rootText += "/*confirm按钮背景*/--confirmBtnBg:#b6c781;";
+  if (!getRoot("confirmFontSize")) rootText += "/*confirm字体大小*/--confirmFontSize:1rem;";
+  if (!getRoot("confirmColor")) rootText += "/*confirm字体颜色*/--confirmColor:#000;";
+  if (!getRoot("confirmBtnColor")) rootText += "/*confirm按钮字体颜色*/--confirmBtnColor:#fff;";
 
   const style = document.createElement("style");
   style.innerHTML = `:root{${rootText}}`;
@@ -182,53 +169,54 @@ const icoConfig = require("./src/icoConfig.json");
       fontSize = getRoot("confirmFontSize"),
       color = getRoot("confirmColor"),
       btnColor = getRoot("confirmBtnColor");
+    const showCancel = config.showCancel == undefined ? true : config.showCancel;
 
     mask.style.cssText = `
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 99999;
-  width: 100%;
-  height: 100%;
-  display:flex;
-  justify-content:center;
-  align-items: center;
-  background: inherit;
-  background: ${maskBg};`;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 99999;
+      width: 100%;
+      height: 100%;
+      display:flex;
+      justify-content:center;
+      align-items: center;
+      background: inherit;
+      background: ${maskBg};`;
 
     div.style.cssText = `
-  background: inherit;
-  background:${Theme};
-  text-align: center;
-  color: ${color};
-  font-size: ${fontSize};
-  padding: 1.5em;
-  max-width:50vw;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;`;
+      background: inherit;
+      background:${Theme};
+      text-align: center;
+      color: ${color};
+      font-size: ${fontSize};
+      padding: 2.5em 1.5em;
+      max-width:85vw;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;`;
 
     blur.style.cssText = `
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: inherit;
-  filter: blur(10px) saturate(2);`;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: inherit;
+      filter: blur(10px) saturate(2);`;
 
     plan.style.cssText = `
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:rgba(255, 255, 255, 0.66);`;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:rgba(255, 255, 255, 0.66);`;
 
-    msg.style.cssText = `margin:0;position: relative;`;
-    let buttonCSS = `position: relative;margin: 4em 1em 0 1em;font-size: .8em;appearance: none;background: ${btnBg};color: ${btnColor};border: none;padding: 1em 3em;cursor: pointer;outline: none;`;
+    msg.style.cssText = `margin:0;position: relative;line-height: 2;`;
+    let buttonCSS = `position: relative;margin: 2.5em 1em 0 1em;font-size: .8em;appearance: none;background: ${btnBg};color: ${btnColor};border: none;padding: 1em 3em;cursor: pointer;outline: none;`;
     confirm.style.cssText = buttonCSS;
     cancel.style.cssText = buttonCSS;
 
@@ -243,10 +231,10 @@ const icoConfig = require("./src/icoConfig.json");
       div.appendChild(plan);
       div.appendChild(msg);
       confirm.innerText = confirmText ? confirmText.toString() : "确认";
-      cancel.innerText = cancelText ? cancelText.toString() : "取消";
+      if (showCancel) cancel.innerText = cancelText ? cancelText.toString() : "取消";
 
       div.appendChild(confirm);
-      div.appendChild(cancel);
+      showCancel && div.appendChild(cancel);
 
       mask.appendChild(div);
       document.body.appendChild(mask);
@@ -255,37 +243,27 @@ const icoConfig = require("./src/icoConfig.json");
 
     if (typeof config == "string") {
       content = config;
-
       createModel();
-
-      return new Promise((ok, no) => {
-        confirm.onclick = () => {
-          removeConfirm();
-          ok();
-        };
-        cancel.onclick = () => {
-          removeConfirm();
-          no("[错误] 没有可以执行的回调");
-        };
-      });
     } else {
       content = config.content;
       confirmText = config.confirmText;
       cancelText = config.cancelText;
       success = config.success;
       fail = config.fail;
-
       createModel();
+    }
 
+    return new Promise((ok, no) => {
       confirm.onclick = () => {
         removeConfirm();
-        success && success();
+        success ? success() : ok();
       };
-      cancel.onclick = () => {
-        removeConfirm();
-        fail && fail();
-      };
-    }
+      if (showCancel)
+        cancel.onclick = () => {
+          removeConfirm();
+          fail ? fail() : no("[错误] 没有可以执行的回调");
+        };
+    });
   };
   //PROTO: loading遮罩
   window.showLoading = () => {
@@ -293,17 +271,14 @@ const icoConfig = require("./src/icoConfig.json");
     let svg = new Image();
     svg.src = icoConfig.load;
     mask.id = "Pd_loader";
-    mask.style.cssText =
-      "width:100%;height:100%;position: fixed;z-index: 99;top: 0;left: 0;background:rgba(0,0,0,.65);display:flex;align-items: center; justify-content: center;";
+    mask.style.cssText = "width:100%;height:100%;position: fixed;z-index: 99;top: 0;left: 0;background:rgba(0,0,0,.65);display:flex;align-items: center; justify-content: center;";
 
-    document.querySelector("#Pd_loader") &&
-      document.body.removeChild(document.querySelector("#Pd_loader"));
+    document.querySelector("#Pd_loader") && document.body.removeChild(document.querySelector("#Pd_loader"));
     mask.appendChild(svg);
     document.body.appendChild(mask);
   };
   window.hideLoading = () => {
-    document.querySelector("#Pd_loader") &&
-      document.body.removeChild(document.querySelector("#Pd_loader"));
+    document.querySelector("#Pd_loader") && document.body.removeChild(document.querySelector("#Pd_loader"));
   };
 
   //内置方法
@@ -330,8 +305,14 @@ const icoConfig = require("./src/icoConfig.json");
         }
       };
       this.get = this.init();
+      this.guid = () => {
+        const S4 = () => {
+          return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+        };
+        return `PandoraAPI_${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`;
+      };
       //PROTO: 生产PandoraId
-      this.pid = `PandoraAPI_${new Date().getTime()}`;
+      this.pid = this.guid();
       //PROTO: 默认参数赋值
       this.extend = (config, options) => {
         if (!options) {
@@ -366,11 +347,10 @@ const icoConfig = require("./src/icoConfig.json");
       this.siblings = name => {
         const ele = this.get;
         const parent = this.parent();
-        ele.selected = !0;
         let siblingArr = [];
 
         for (let e of parent.child(name).get) {
-          !e.selected && siblingArr.push(e);
+          if (ele != e) siblingArr.push(e);
         }
         this.get = siblingArr;
         return this;
@@ -499,8 +479,7 @@ const icoConfig = require("./src/icoConfig.json");
         const addThat = ele => {
           const beforeClass = ele.classList.value;
           if (beforeClass) {
-            if (beforeClass.indexOf(name) < 0)
-              ele.className = `${beforeClass} ${name.trim()}`;
+            if (beforeClass.indexOf(name) < 0) ele.className = `${beforeClass} ${name.trim()}`;
           } else {
             ele.className = name.trim();
           }
@@ -514,7 +493,7 @@ const icoConfig = require("./src/icoConfig.json");
       };
       //PROTO: 移除class
       this.removeClass = name => {
-        const ele = this.get;
+        const ele = this;
         const removeThat = ele => {
           let beforeClass = ele.classList.value.split(" "),
             afterClass;
@@ -524,20 +503,18 @@ const icoConfig = require("./src/icoConfig.json");
           afterClass = beforeClass.join(" ");
           ele.className = afterClass;
         };
+
         if (ele.length) {
-          for (let e of ele) removeThat(e);
+          for (let e of ele.get) removeThat(e);
         } else {
-          removeThat(ele);
+          removeThat(ele.get);
         }
         return this;
       };
       //PROTO: 是否拥有class名
       this.hasClass = name => {
         const ele = this.get;
-        const classlist =
-          ele.classList.value.indexOf(" ") > -1
-            ? ele.classList.value.split(" ")
-            : ele.classList.value;
+        const classlist = ele.classList.value.indexOf(" ") > -1 ? ele.classList.value.split(" ") : ele.classList.value;
         if (classlist.indexOf(name) > -1) {
           return !0;
         } else {
@@ -624,7 +601,7 @@ const icoConfig = require("./src/icoConfig.json");
           fn();
           infiniteFrame = requestAnimationFrame(infiniteFn);
         };
-        ele.ontouchstart = () => {
+        ele.ontouchstart = event => {
           event.preventDefault();
           cancelAnimationFrame(infiniteFn);
           infiniteFn();
@@ -688,19 +665,22 @@ const icoConfig = require("./src/icoConfig.json");
       };
       //PROTO: 显示
       this.show = callback => {
-        if (this.attr("beforeHide")) {
-          this.css({ display: this.attr("beforeHide") });
-        } else {
-          this.css({ display: "block" });
-        }
+        this.attr("beforeHide") ? this.css({ display: this.attr("beforeHide") }) : this.css({ display: "block" });
         callback && setTimeout(callback, 0);
         return this;
       };
       //PROTO: 隐藏
       this.hide = callback => {
-        if (!this.attr("beforeHide"))
-          this.attr("beforeHide", this.css("display"));
-        this.css({ display: "none" });
+        if (this.get.length) {
+          for (let a of this.get) {
+            this.get = a;
+            if (!this.attr("beforeHide")) this.attr("beforeHide", this.css("display") == "none" ? "block" : this.css("display"));
+            this.css({ display: "none" });
+          }
+        } else {
+          if (!this.attr("beforeHide")) this.attr("beforeHide", this.css("display") == "none" ? "block" : this.css("display"));
+          this.css({ display: "none" });
+        }
         callback && setTimeout(callback, 0);
         return this;
       };
@@ -731,9 +711,7 @@ const icoConfig = require("./src/icoConfig.json");
           if (config.data)
             params = Object.keys(config.data)
               .map(key => {
-                return `${encodeURIComponent(key)}=${encodeURIComponent(
-                  config.data[key]
-                )}`;
+                return `${encodeURIComponent(key)}=${encodeURIComponent(config.data[key])}`;
               })
               .join("&");
         } else {
@@ -741,11 +719,7 @@ const icoConfig = require("./src/icoConfig.json");
         }
 
         http.onload = () => {
-          if (
-            http.status === 200 ||
-            http.statusText === "OK" ||
-            http.readyState === 4
-          ) {
+          if (http.status === 200 || http.statusText === "OK" || http.readyState === 4) {
             const res = http.response;
             try {
               JSON.parse(res);
@@ -760,15 +734,9 @@ const icoConfig = require("./src/icoConfig.json");
         http.open(config.type.toUpperCase(), config.url, config.async);
 
         if (config.headers) {
-          for (let keys of config.headers) {
-            http.setRequestHeader(keys, config.headers[keys]);
-          }
+          for (let keys of config.headers) http.setRequestHeader(keys, config.headers[keys]);
         } else {
-          if (config.dataType == "json")
-            http.setRequestHeader(
-              "Content-type",
-              "application/x-www-form-urlencoded"
-            );
+          if (config.dataType == "json") http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         }
 
         http.send(params);
@@ -795,19 +763,20 @@ const icoConfig = require("./src/icoConfig.json");
 
         fetch(config.url, {
           body: params,
-          headers: config.headers || {
-            "Content-type": "application/x-www-form-urlencoded",
-          },
+          headers: config.headers || { "Content-type": "application/x-www-form-urlencoded" },
           method: config.type.toLocaleUpperCase(),
         })
           .then(res => {
-            if (res.ok) return res.json();
+            if (res.ok) {
+              return res.json();
+            } else {
+              console.error("[错误] 请求地址发生错误！");
+            }
           })
           .then(success => {
             config.success && config.success(success);
           })
           .catch(error => {
-            console.error("[错误] 请求地址发生错误！");
             config.error && config.error(error);
           });
       };
@@ -817,20 +786,16 @@ const icoConfig = require("./src/icoConfig.json");
         let obj = {};
         for (let e of ele.querySelectorAll("*")) {
           const keyName = e.getAttribute("name");
-          if (keyName) {
-            obj[keyName] = e.value;
-          }
+          if (keyName) obj[keyName] = e.value;
         }
         return obj;
       };
       //PROTO: 使用追踪
       this.usingTrack = fnName => {
         const form = navigator.userAgent,
-          domain = document.domain;
+          domain = window.location.href;
         if (canTrack()) {
-          console.info(
-            "[提示] 已启用使用情况跟踪，如需关闭请修改 window.disableTrack"
-          );
+          console.info("[提示] 已启用使用情况跟踪，如需关闭请修改 window.enableTrack");
           this.fetch({
             url: `https://api.pandorajs.com/Pd_track?usageFunction=${fnName}&usagePlatform=${form}&usageDomain=${domain}`,
           });
@@ -894,19 +859,13 @@ const icoConfig = require("./src/icoConfig.json");
       this.hashChange = callback => {
         const getRoutePath = () => {
           if (location.hash.indexOf("#") > -1) {
-            return location.hash.match(/#(\S*)\?/) == null
-              ? location.hash.match(/#(\S*)/)[1]
-              : location.hash.match(/#(\S*)\?/)[1];
+            return location.hash.match(/#(\S*)\?/) == null ? location.hash.match(/#(\S*)/)[1] : location.hash.match(/#(\S*)\?/)[1];
           } else {
             return !1;
           }
         };
-        const routePath = getRoutePath();
-        if (routePath) {
-          callback(routePath);
-        } else {
-          callback("/");
-        }
+        const routePath = getRoutePath() || "/";
+        callback(routePath);
       };
     }
   };
@@ -918,7 +877,6 @@ const icoConfig = require("./src/icoConfig.json");
       }
       //FUNCTION:Mustache渲染
       Mush(options) {
-        this.usingTrack("Mush");
         let config = {
           //渲染数据(类型：对象)
           data: null,
@@ -937,9 +895,7 @@ const icoConfig = require("./src/icoConfig.json");
         // 重构渲染数据
         const getObj = res => {
           let newObj = {};
-          for (let keyName of Object.keys(res)) {
-            newObj[keyName] = res[keyName];
-          }
+          for (let keyName of Object.keys(res)) newObj[keyName] = res[keyName];
           return newObj;
         };
 
@@ -958,9 +914,7 @@ const icoConfig = require("./src/icoConfig.json");
           return new Promise(next => {
             Html = bHtml;
             for (let value of matchValue) {
-              for (let keyName in config.data)
-                value === keyName &&
-                  (Html = Html.replace(patterns, config.data[value] || ""));
+              for (let keyName in config.data) value === keyName && (Html = Html.replace(patterns, config.data[value].toString() || ""));
             }
             this.html(Html);
             next();
@@ -982,12 +936,12 @@ const icoConfig = require("./src/icoConfig.json");
         //遍历变量是否被动态修改
         realVal.forEach(e => {
           Object.defineProperty(this.globalData, e, {
-            set: value => {
+            set(value) {
               config.data[e] = value;
               renderHtml();
               config.Update && config.Update(getObj(this.globalData));
             },
-            get: () => {
+            get() {
               return config.data[e];
             },
             // 是否枚举
@@ -1001,20 +955,18 @@ const icoConfig = require("./src/icoConfig.json");
       }
       //FUNCTION:静态路由
       Router(options) {
-        this.usingTrack("Router");
         let config = {
           // 路由路径集合(类型：数组)
           routes: null,
         };
         config = this.extend(config, options);
         const that = this;
-        let fromParams;
         templatePolyfill();
 
         // 遍历路由路径
         const eachRoutes = path => {
           return new Promise((success, fail) => {
-            if (config.routes && path) {
+            if (path) {
               if (JSON.stringify(config.routes).indexOf(path) < 0) {
                 fail(`[错误 - Router] ${path} 不存在于routes！`);
               } else {
@@ -1023,12 +975,15 @@ const icoConfig = require("./src/icoConfig.json");
                     that
                       .template(path, that.get)
                       .then(() => {
-                        let query = fromParams || that.getParams();
-                        e.callback && e.callback(query);
+                        let query = that.getParams();
                         window.location.href = `#${path}`;
+                        e.callback && e.callback(query);
                         success();
+                        window.onhashchange = null;
                         setTimeout(() => {
-                          isNavigate = !1;
+                          window.onhashchange = () => {
+                            that.hashChange(eachRoutes);
+                          };
                         }, 0);
                       })
                       .catch(() => {
@@ -1041,31 +996,20 @@ const icoConfig = require("./src/icoConfig.json");
           });
         };
 
-        // 是否使用导航
-        let isNavigate = !1;
         // 路由导航
         this.navigateTo = path => {
-          isNavigate = !0;
           eachRoutes(path);
         };
 
         if (config.routes) {
-          fromParams = that.getParams();
-
-          window.onload = () => {
-            that.hashChange(eachRoutes);
-          };
-          window.onhashchange = () => {
-            if (!isNavigate) {
-              that.hashChange(eachRoutes);
-            }
-          };
+          eachRoutes(config.routes[0].path);
+        } else {
+          console.error(`[错误 - Router] 不存在任何routes！`);
         }
         return this;
       }
       //TODO:文件路由
       filesRouter(options) {
-        this.usingTrack("filesRouter");
         let config = {
           routes: null,
         };
@@ -1118,7 +1062,7 @@ const icoConfig = require("./src/icoConfig.json");
         };
 
         if (config.routes) {
-          let newUrl = location.href.replace(location.search, "");
+          let newUrl = window.location.href.replace(window.location.search, "");
           fromParams = that.getParams();
           window.history.pushState(null, "", newUrl);
 
@@ -1193,14 +1137,10 @@ const icoConfig = require("./src/icoConfig.json");
             default:
               switch (config.Direction) {
                 case "horizontal":
-                  parentEle.style.transform = `translate3d(${
-                    -1 * (childW * cur)
-                  }px,0,0)`;
+                  parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
                   break;
                 case "vertical":
-                  parentEle.style.transform = `translate3d(0,${
-                    -1 * (childH * cur)
-                  }px,0)`;
+                  parentEle.style.transform = `translate3d(0,${-1 * (childH * cur)}px,0)`;
                   break;
               }
               break;
@@ -1218,8 +1158,7 @@ const icoConfig = require("./src/icoConfig.json");
 
         //分页器
         const Pagination = current => {
-          for (let e of childEle)
-            e.className = e.className.replace("active", "").trim();
+          for (let e of childEle) e.className = e.className.replace("active", "").trim();
           if (childEle[cur].className) {
             childEle[cur].className += " active";
           } else {
@@ -1227,40 +1166,22 @@ const icoConfig = require("./src/icoConfig.json");
           }
           if (config.Pagination) {
             if (parentEle.parentElement.querySelector(".Pd-pagination")) {
-              parentEle.parentElement.removeChild(
-                parentEle.parentElement.querySelector(".Pd-pagination")
-              );
+              parentEle.parentElement.removeChild(parentEle.parentElement.querySelector(".Pd-pagination"));
             }
             let pager = document.createElement("div");
             pager.className = "Pd-pagination";
 
             for (let a = 0; a < total; a++) {
               let pageChild = document.createElement("a"),
-                textNode = childEle[a].getAttribute("data-title")
-                  ? document.createTextNode(
-                      childEle[a].getAttribute("data-title")
-                    )
-                  : document.createTextNode(a);
+                textNode = childEle[a].getAttribute("data-title") ? document.createTextNode(childEle[a].getAttribute("data-title")) : document.createTextNode(a);
               pageChild.setAttribute("href", "javascript:void 0");
               if (a === current) pageChild.className = "active";
               pageChild.appendChild(textNode);
               pager.appendChild(pageChild);
             }
-            parentEle.parentElement.insertBefore(
-              pager,
-              parentEle.nextElementSibling
-            );
-            for (
-              let a = 0;
-              a <
-              parentEle.parentElement
-                .querySelector(".Pd-pagination")
-                .querySelectorAll("a").length;
-              a++
-            ) {
-              let e = parentEle.parentElement
-                .querySelector(".Pd-pagination")
-                .querySelectorAll("a")[a];
+            parentEle.parentElement.insertBefore(pager, parentEle.nextElementSibling);
+            for (let a = 0; a < parentEle.parentElement.querySelector(".Pd-pagination").querySelectorAll("a").length; a++) {
+              let e = parentEle.parentElement.querySelector(".Pd-pagination").querySelectorAll("a")[a];
               let idx = a;
               e.onclick = () => {
                 cur = idx;
@@ -1301,11 +1222,7 @@ const icoConfig = require("./src/icoConfig.json");
         let startX, startY, endX, endY, curX, curY;
         //方法：滑动开始
         const touchStart = event => {
-          if (
-            event.target.getAttribute("data-cancel") ||
-            event.target.tagName.toUpperCase() == "A"
-          )
-            return !1;
+          if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
           event.preventDefault();
           clearTimeout(AutoTimeout);
           cancelAnimationFrame(AutoPlayFrame);
@@ -1325,11 +1242,7 @@ const icoConfig = require("./src/icoConfig.json");
 
         //方法：滑动中
         const touchMove = event => {
-          if (
-            event.target.getAttribute("data-cancel") ||
-            event.target.tagName.toUpperCase() == "A"
-          )
-            return !1;
+          if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
           let { pageX, pageY } = event.changedTouches[0];
           let { left, top } = parentEle.parentElement.getBoundingClientRect();
           curX = pageX - left;
@@ -1337,33 +1250,22 @@ const icoConfig = require("./src/icoConfig.json");
 
           switch (config.Effect) {
             case "fade":
-              for (let cur of childEle)
-                cur.style.transition = `opacity ${config.Speed}s linear`;
+              for (let cur of childEle) cur.style.transition = `opacity ${config.Speed}s linear`;
               break;
             default:
               switch (config.Direction) {
                 case "horizontal":
                   if (startX > curX) {
-                    parentEle.style.transform = `translate3d(${
-                      -1 * (startX - curX + childW * cur)
-                    }px,0,0)`;
+                    parentEle.style.transform = `translate3d(${-1 * (startX - curX + childW * cur)}px,0,0)`;
                   } else {
-                    parentEle.style.transform = `translate3d(${
-                      -1 * (childW * cur) + Math.abs(curX - startX)
-                    }px,0,0)`;
+                    parentEle.style.transform = `translate3d(${-1 * (childW * cur) + Math.abs(curX - startX)}px,0,0)`;
                   }
                   break;
                 case "vertical":
                   if (startY > curY) {
-                    if (cur != total - 1)
-                      parentEle.style.transform = `translate3d(0,${
-                        -1 * (startY - curY + childH * cur)
-                      }px,0)`;
+                    if (cur != total - 1) parentEle.style.transform = `translate3d(0,${-1 * (startY - curY + childH * cur)}px,0)`;
                   } else {
-                    if (cur != 0)
-                      parentEle.style.transform = `translate3d(0,${
-                        -1 * (childH * cur) + Math.abs(curY - startY)
-                      }px,0)`;
+                    if (cur != 0) parentEle.style.transform = `translate3d(0,${-1 * (childH * cur) + Math.abs(curY - startY)}px,0)`;
                   }
                   break;
               }
@@ -1373,11 +1275,7 @@ const icoConfig = require("./src/icoConfig.json");
 
         //方法：滑动结束
         const touchEnd = event => {
-          if (
-            event.target.getAttribute("data-cancel") ||
-            event.target.tagName.toUpperCase() == "A"
-          )
-            return !1;
+          if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
           clearTimeout(AutoTimeout);
           AutoPlay();
           parentEle.style.transition = `transform ${config.Speed}s ${config.Curve}`;
@@ -1389,15 +1287,9 @@ const icoConfig = require("./src/icoConfig.json");
               endX = pageX - left;
               switch (config.Effect) {
                 case "fade":
-                  if (
-                    startX - endX > childW / config.Distance &&
-                    cur === total - 1
-                  ) {
+                  if (startX - endX > childW / config.Distance && cur === total - 1) {
                     cur = 0;
-                  } else if (
-                    startX - endX > childW / config.Distance &&
-                    cur < total - 1
-                  ) {
+                  } else if (startX - endX > childW / config.Distance && cur < total - 1) {
                     Next();
                   } else if (endX - startX > childW / config.Distance) {
                     Prev();
@@ -1410,15 +1302,9 @@ const icoConfig = require("./src/icoConfig.json");
                   Swiper();
                   break;
                 default:
-                  if (
-                    startX - endX > childW / config.Distance &&
-                    cur < total - 1
-                  )
-                    Next();
+                  if (startX - endX > childW / config.Distance && cur < total - 1) Next();
                   if (endX - startX > childW / config.Distance) Prev();
-                  parentEle.style.transform = `translate3d(${
-                    -1 * (childW * cur)
-                  }px,0,0)`;
+                  parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
                   break;
               }
               break;
@@ -1426,15 +1312,9 @@ const icoConfig = require("./src/icoConfig.json");
               endY = pageY - top;
               switch (config.Effect) {
                 case "fade":
-                  if (
-                    startY - endY > childH / config.Distance &&
-                    cur === total - 1
-                  ) {
+                  if (startY - endY > childH / config.Distance && cur === total - 1) {
                     cur = 0;
-                  } else if (
-                    startY - endY > childH / config.Distance &&
-                    cur < total - 1
-                  ) {
+                  } else if (startY - endY > childH / config.Distance && cur < total - 1) {
                     Next();
                   } else if (endY - startY > childH / config.Distance) {
                     Prev();
@@ -1447,15 +1327,9 @@ const icoConfig = require("./src/icoConfig.json");
                   Swiper();
                   break;
                 default:
-                  if (
-                    startY - endY > childH / config.Distance &&
-                    cur < total - 1
-                  )
-                    Next();
+                  if (startY - endY > childH / config.Distance && cur < total - 1) Next();
                   if (endY - startY > childH / config.Distance) Prev();
-                  parentEle.style.transform = `translate3d(0,${
-                    -1 * (childH * cur)
-                  }px,0)`;
+                  parentEle.style.transform = `translate3d(0,${-1 * (childH * cur)}px,0)`;
                   break;
               }
               break;
@@ -1490,8 +1364,6 @@ const icoConfig = require("./src/icoConfig.json");
         //初始化
         const Init = () => {
           let { offsetWidth, offsetHeight } = childEle[0];
-          childW = offsetWidth;
-          childH = offsetHeight;
           cur = config.InitPage;
 
           new Promise(next => {
@@ -1506,11 +1378,11 @@ const icoConfig = require("./src/icoConfig.json");
                 switch (config.Direction) {
                   case "horizontal":
                     parentEle.style.flexDirection = "row";
-                    parentEle.style.width = `${childW * total}px`;
+                    parentEle.style.width = `${offsetWidth * total}px`;
                     break;
                   case "vertical":
                     parentEle.style.flexDirection = "column";
-                    parentEle.style.height = `${childH * total}px`;
+                    parentEle.style.height = `${offsetHeight * total}px`;
                     break;
                 }
                 parentEle.style.display = "flex";
@@ -1524,10 +1396,8 @@ const icoConfig = require("./src/icoConfig.json");
                 //移除事件
                 Swiper(config.InitPage);
                 AutoPlay();
-                config.Inertia &&
-                  parentEle.removeEventListener("touchmove", touchMove);
-                config.Scroll &&
-                  parentEle.removeEventListener("mousewheel", scrollMove);
+                config.Inertia && parentEle.removeEventListener("touchmove", touchMove);
+                config.Scroll && parentEle.removeEventListener("mousewheel", scrollMove);
                 parentEle.removeEventListener("touchstart", touchStart);
                 parentEle.removeEventListener("touchend", touchEnd);
                 next();
@@ -1535,10 +1405,8 @@ const icoConfig = require("./src/icoConfig.json");
             })
             .then(() => {
               //添加事件
-              config.Inertia &&
-                parentEle.addEventListener("touchmove", touchMove);
-              config.Scroll &&
-                parentEle.addEventListener("mousewheel", scrollMove);
+              config.Inertia && parentEle.addEventListener("touchmove", touchMove);
+              config.Scroll && parentEle.addEventListener("mousewheel", scrollMove);
               parentEle.addEventListener("touchstart", touchStart);
               parentEle.addEventListener("touchend", touchEnd);
               if (config.Hover) {
@@ -1561,7 +1429,6 @@ const icoConfig = require("./src/icoConfig.json");
       }
       //FUNCTION:字体自适应
       AutoSize(options) {
-        this.usingTrack("AutoSize");
         let config = {
           //固定尺寸(类型：字符串)
           PageSize: "device-width",
@@ -1583,10 +1450,7 @@ const icoConfig = require("./src/icoConfig.json");
             `width=${config.PageSize},initial-scale=${config.InitScale},minimum-scale=${config.MinScale},maximum-scale=${config.MaxScale},user-scalable=no,viewport-fit=cover`
           );
         } else {
-          meta.setAttribute(
-            "content",
-            `width=${config.PageSize},user-scalable=no,viewport-fit=cover`
-          );
+          meta.setAttribute("content", `width=${config.PageSize},user-scalable=no,viewport-fit=cover`);
         }
         new PandoraAPI("head").get.appendChild(meta);
 
@@ -1651,15 +1515,10 @@ const icoConfig = require("./src/icoConfig.json");
         let mask = document.createElement("div"),
           parent = this.get.parentElement;
         mask.className = "Pd-Mask";
-        const confirmBtn = config.Confirm.btn
-            ? new PandoraAPI(config.Confirm.btn)
-            : null,
-          cancelBtn = config.Cancel.btn
-            ? new PandoraAPI(config.Cancel.btn)
-            : null;
+        const confirmBtn = config.Confirm.btn ? new PandoraAPI(config.Confirm.btn) : null,
+          cancelBtn = config.Cancel.btn ? new PandoraAPI(config.Cancel.btn) : null;
 
-        if (config.Direction !== "none")
-          this.css({ transition: `all ${config.Speed}ms ${config.Curve}` });
+        if (config.Direction !== "none") this.css({ transition: `all ${config.Speed}ms ${config.Curve}` });
 
         //关闭弹框
         const closeDialog = () => {
@@ -1683,15 +1542,7 @@ const icoConfig = require("./src/icoConfig.json");
         const Effect = where => {
           if (config.mask) {
             parent.insertBefore(mask, this.get.nextElementSibling);
-            new PandoraAPI(".Pd-Mask").css({
-              width: "100vw",
-              height: "100vh",
-              background: config.maskColor,
-              position: "fixed",
-              top: 0,
-              left: 0,
-              "z-index": 998,
-            });
+            new PandoraAPI(".Pd-Mask").css({ width: "100vw", height: "100vh", background: config.maskColor, position: "fixed", top: 0, left: 0, "z-index": 998 });
           }
 
           switch (where) {
@@ -1742,40 +1593,16 @@ const icoConfig = require("./src/icoConfig.json");
                     left = parseInt(this.css("width")) / 2;
                   switch (config.Direction) {
                     case "none":
-                      this.css({
-                        position: "fixed",
-                        top: `calc(50% - ${top}px)`,
-                        left: `calc(50% - ${left}px)`,
-                        "z-index": 999,
-                        transform: "translate3d(0,0,0) scale(1)",
-                      });
+                      this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
                       break;
                     case "zoom":
-                      this.css({
-                        position: "fixed",
-                        top: `calc(50% - ${top}px)`,
-                        left: `calc(50% - ${left}px)`,
-                        "z-index": 999,
-                        transform: "translate3d(0,0,0) scale(1)",
-                      });
+                      this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
                       break;
                     case "top":
-                      this.css({
-                        position: "fixed",
-                        top: 0,
-                        left: `calc(50% - ${left}px)`,
-                        "z-index": 999,
-                        transform: "translate3d(0,0,0) scale(1)",
-                      });
+                      this.css({ position: "fixed", top: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
                       break;
                     case "bottom":
-                      this.css({
-                        position: "fixed",
-                        bottom: 0,
-                        left: `calc(50% - ${left}px)`,
-                        "z-index": 999,
-                        transform: "translate3d(0,0,0) scale(1)",
-                      });
+                      this.css({ position: "fixed", bottom: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
                       break;
                   }
                 };
@@ -1818,7 +1645,7 @@ const icoConfig = require("./src/icoConfig.json");
           //加载完成(类型：方法)
           callback: null,
           //加载错误(类型：方法)
-          error: () => {
+          error() {
             console.error("[错误 - ImgLoader] 图片资源加载错误");
             alert("图片资源加载错误");
           },
@@ -1835,10 +1662,8 @@ const icoConfig = require("./src/icoConfig.json");
 
         for (let e of this.getEle("*")) {
           if (e.nodeName.toLowerCase() == "img") e.src && ImgArr.push(e.src);
-          const getBg = window
-            .getComputedStyle(e)
-            .getPropertyValue("background-image");
-          if (getBg.indexOf("url") > -1 && getBg != "none") {
+          const getBg = window.getComputedStyle(e).getPropertyValue("background-image");
+          if (getBg.indexOf("url") > -1 && getBg != "none" && getBg.indexOf("data:") < 0) {
             const url1 = getBg.match(pattern),
               url2 = getBg.match(pattern2),
               url3 = getBg.match(pattern3);
@@ -1848,10 +1673,8 @@ const icoConfig = require("./src/icoConfig.json");
             if (url3) {
               let src = url3[0].toString().replace(/\(/, "");
               src = src.replace(/\)/, "");
-              if (src.match(pattern))
-                src = src.match(pattern)[0].toString().replace(/"/g, "");
-              if (src.match(pattern2))
-                src = src.match(pattern2)[0].toString().replace(/'/g, "");
+              if (src.match(pattern)) src = src.match(pattern)[0].toString().replace(/"/g, "");
+              if (src.match(pattern2)) src = src.match(pattern2)[0].toString().replace(/'/g, "");
               ImgArr.push(src);
             }
           }
@@ -1909,7 +1732,6 @@ const icoConfig = require("./src/icoConfig.json");
       }
       //FUNCTION:图片上传
       ImgUpload(options) {
-        this.usingTrack("ImgUpload");
         let config = {
           //接口地址(类型：字符串)
           apiUrl: "https://api.pandorajs.com/",
@@ -1949,12 +1771,10 @@ const icoConfig = require("./src/icoConfig.json");
           Uid: null,
         };
         config = this.extend(config, options);
+        const that = this;
         const innerHtml = this.html();
         this.empty();
-        this.get.insertAdjacentHTML(
-          "afterbegin",
-          `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`
-        );
+        this.get.insertAdjacentHTML("afterbegin", `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`);
         let uploadBtn = document.createElement("input"),
           userId,
           total = config.Max,
@@ -1970,8 +1790,7 @@ const icoConfig = require("./src/icoConfig.json");
         uploadBtn.type = "file";
         uploadBtn.accept = `image/${config.Format}`;
         uploadBtn.id = `Pd_imgUpload_${this.pid}`;
-        if (config.type === "camera")
-          uploadBtn.setAttribute("capture", "camera");
+        if (config.type === "camera") uploadBtn.setAttribute("capture", "camera");
         uploadBtn.style.display = "none";
         if (config.Max > 1) uploadBtn.multiple = !0;
         const label = this.get.querySelector("label");
@@ -1982,14 +1801,7 @@ const icoConfig = require("./src/icoConfig.json");
         const uploadPreview = obj => {
           const formData = new FormData();
           let waitUploadFile = obj;
-          if (config.alwaysCover)
-            waitUploadFile = new File(
-              [obj],
-              `cover.${obj.name.split(".")[1]}`,
-              {
-                type: obj.type,
-              }
-            );
+          if (config.alwaysCover) waitUploadFile = new File([obj], `cover.${obj.name.split(".")[1]}`, { type: obj.type });
           formData.append("images", waitUploadFile);
           formData.append("uid", userId);
           formData.append("width", config.Clip.width);
@@ -2008,7 +1820,8 @@ const icoConfig = require("./src/icoConfig.json");
             type: "post",
             dataType: "form",
             data: formData,
-            success: res => {
+            success(res) {
+              that.usingTrack("ImgUpload");
               if (res) {
                 current++;
                 steps = (current / total) * 100;
@@ -2025,7 +1838,7 @@ const icoConfig = require("./src/icoConfig.json");
                 console.error("[错误 - ImgUpload] 服务端数据返回有误！");
               }
             },
-            error: () => {
+            error() {
               uploadBtn.disabled = !1;
               uploadBtn.value = "";
               !config.Events.ready && window.hideLoading();
@@ -2049,9 +1862,7 @@ const icoConfig = require("./src/icoConfig.json");
             }
           } else {
             config.Events.overMax && config.Events.overMax();
-            console.info(
-              `[提示 - ImgUpload] 文件数量超过最大数量:${config.Max}`
-            );
+            console.info(`[提示 - ImgUpload] 文件数量超过最大数量:${config.Max}`);
           }
         };
 
@@ -2122,9 +1933,7 @@ const icoConfig = require("./src/icoConfig.json");
           topIndex,
           canMove = !0;
 
-        this.css({
-          position: "relative",
-        });
+        this.css({ position: "relative" });
 
         beforeImgArr.forEach((cur, idx) => {
           if (JSON.parse(cur.getAttribute("Pd-move"))) {
@@ -2136,45 +1945,19 @@ const icoConfig = require("./src/icoConfig.json");
 
         //图标配置
         const iconStyle = option => {
-          let positionConfig = {
-            top: null,
-            left: null,
-            right: null,
-            bottom: null,
-            name: null,
-          };
+          let positionConfig = { top: null, left: null, right: null, bottom: null, name: null };
           positionConfig = this.extend(positionConfig, option);
-          return `<a class="Pd-ImgTransit-btn Pd-${
-            positionConfig.name
-          }" style="width:${config.iconSize}px;height:${
-            config.iconSize
-          }px;background:#fff url('${
+          return `<a class="Pd-ImgTransit-btn Pd-${positionConfig.name}" style="width:${config.iconSize}px;height:${config.iconSize}px;background:#fff url('${
             icoConfig[positionConfig.name]
-          }');background-position:center;background-repeat:no-repeat;background-size:65%;position:absolute;border-radius:50%;top:${
-            positionConfig.top
-          }px;left:${positionConfig.left}px;right:${
+          }');background-position:center;background-repeat:no-repeat;background-size:65%;position:absolute;border-radius:50%;top:${positionConfig.top}px;left:${positionConfig.left}px;right:${
             positionConfig.right
-          }px;bottom:${
-            positionConfig.bottom
-          }px;z-index:2;${btnAnimation}" href="javascript:void 0"></a>`;
+          }px;bottom:${positionConfig.bottom}px;z-index:2;${btnAnimation}" href="javascript:void 0"></a>`;
         };
 
         const icon = {
-          resize: iconStyle({
-            left: `-${config.iconSize / 2}`,
-            bottom: `-${config.iconSize / 2}`,
-            name: "resize",
-          }),
-          rotate: iconStyle({
-            right: `-${config.iconSize / 2}`,
-            top: `-${config.iconSize / 2}`,
-            name: "rotate",
-          }),
-          delete: iconStyle({
-            left: `-${config.iconSize / 2}`,
-            top: `-${config.iconSize / 2}`,
-            name: "delete",
-          }),
+          resize: iconStyle({ left: `-${config.iconSize / 2}`, bottom: `-${config.iconSize / 2}`, name: "resize" }),
+          rotate: iconStyle({ right: `-${config.iconSize / 2}`, top: `-${config.iconSize / 2}`, name: "rotate" }),
+          delete: iconStyle({ left: `-${config.iconSize / 2}`, top: `-${config.iconSize / 2}`, name: "delete" }),
         };
 
         //删除原始元素
@@ -2183,28 +1966,19 @@ const icoConfig = require("./src/icoConfig.json");
             imgArr = Array.prototype.slice.call(imgRealArr);
           imgArr.forEach((cur, idx) => {
             let current = imgRealArr[idx];
-            JSON.parse(current.getAttribute("Pd-move")) &&
-              current.parentElement.removeChild(current);
+            JSON.parse(current.getAttribute("Pd-move")) && current.parentElement.removeChild(current);
           });
         };
 
         //设置参数
         const setConfig = (ele, eleConfig) => {
-          for (let a of ele.querySelectorAll(".Pd-ImgTransit-btn"))
-            a.style.transform = `scale(${1 / (eleConfig.scale / 100)}) rotate(${
-              -1 * eleConfig.rotate
-            }deg)`;
-          return (ele.style.transform = `translate3d(${
-            eleConfig.translate
-          }) scale(${eleConfig.scale / 100}) rotate(${eleConfig.rotate}deg)`);
+          for (let a of ele.querySelectorAll(".Pd-ImgTransit-btn")) a.style.transform = `scale(${1 / (eleConfig.scale / 100)}) rotate(${-1 * eleConfig.rotate}deg)`;
+          return (ele.style.transform = `translate3d(${eleConfig.translate}) scale(${eleConfig.scale / 100}) rotate(${eleConfig.rotate}deg)`);
         };
 
         //获取中心
         const getCenterPoint = ele => {
-          return {
-            x: ele.getBoundingClientRect().left + ele.offsetWidth / 2,
-            y: ele.getBoundingClientRect().top + ele.offsetHeight / 2,
-          };
+          return { x: ele.getBoundingClientRect().left + ele.offsetWidth / 2, y: ele.getBoundingClientRect().top + ele.offsetHeight / 2 };
         };
 
         // 获取两点距离
@@ -2244,10 +2018,8 @@ const icoConfig = require("./src/icoConfig.json");
               e.preventDefault();
               if (e.touches.length >= 2 && isTouch) {
                 let now = e.touches; //得到第二组两个点
-                let scale =
-                  getDistance(now[0], now[1]) / getDistance(start[0], start[1]); //得到缩放比例，getDistance是勾股定理的一个方法
-                let rotation =
-                  getAngle(now[0], now[1]) - getAngle(start[0], start[1]); //得到旋转角度，getAngle是得到夹角的一个方法
+                let scale = getDistance(now[0], now[1]) / getDistance(start[0], start[1]); //得到缩放比例，getDistance是勾股定理的一个方法
+                let rotation = getAngle(now[0], now[1]) - getAngle(start[0], start[1]); //得到旋转角度，getAngle是得到夹角的一个方法
                 e.scale = scale.toFixed(2);
                 e.rotation = rotation.toFixed(2);
                 obj.gesturemove && obj.gesturemove.call(el, e); //执行gesturemove方法
@@ -2284,9 +2056,7 @@ const icoConfig = require("./src/icoConfig.json");
             eleReal[idx].style.position = "absolute";
             eleReal[idx].style.top = "50%";
             eleReal[idx].style.left = "50%";
-            eleReal[idx].style.margin = `-${h / 2 + config.padding}px 0 0 -${
-              w / 2 + config.padding
-            }px`;
+            eleReal[idx].style.margin = `-${h / 2 + config.padding}px 0 0 -${w / 2 + config.padding}px`;
             eleReal[idx].style.zIndex = idx + 1;
             eleReal[idx].style.padding = `${config.padding}px`;
 
@@ -2306,12 +2076,7 @@ const icoConfig = require("./src/icoConfig.json");
 
             touchStart = event => {
               event.preventDefault();
-              if (
-                JSON.parse(event.target.getAttribute("pd-move")) ||
-                JSON.parse(event.target.parentElement.getAttribute("pd-move"))
-              )
-                eleReal[idx].querySelector("img").style.transform =
-                  "scale(1.04)";
+              if (JSON.parse(event.target.getAttribute("pd-move")) || JSON.parse(event.target.parentElement.getAttribute("pd-move"))) eleReal[idx].querySelector("img").style.transform = "scale(1.04)";
               config.callback &&
                 config.callback({
                   type: "choose",
@@ -2332,39 +2097,22 @@ const icoConfig = require("./src/icoConfig.json");
                     nowY = event.changedTouches[0].pageY,
                     w = event.target.getBoundingClientRect().width,
                     h = event.target.getBoundingClientRect().height,
-                    icon = event.target.parentElement
-                      .querySelectorAll(".Pd-ImgTransit-btn")[0]
-                      .getBoundingClientRect(),
+                    icon = event.target.parentElement.querySelectorAll(".Pd-ImgTransit-btn")[0].getBoundingClientRect(),
                     iconW = icon.width / 2;
                   touchX = nowX - startX;
                   touchY = nowY - startY;
-                  let getBounding = eleReal[
-                      idx
-                    ].parentElement.getBoundingClientRect(),
-                    parentBox = {
-                      width: config.bounds
-                        ? getBounding.width + config.outBounds
-                        : getBounding.width,
-                      height: config.bounds
-                        ? getBounding.height + config.outBounds
-                        : getBounding.height,
-                    };
+                  let getBounding = eleReal[idx].parentElement.getBoundingClientRect(),
+                    parentBox = { width: config.bounds ? getBounding.width + config.outBounds : getBounding.width, height: config.bounds ? getBounding.height + config.outBounds : getBounding.height };
 
                   if (config.bounds) {
-                    if (
-                      Math.abs(touchX) >=
-                      parentBox.width / 2 - w / 2 - iconW
-                    ) {
+                    if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconW) {
                       if (touchX < 0) {
                         touchX = -1 * (parentBox.width / 2 - w / 2 - iconW);
                       } else {
                         touchX = parentBox.width / 2 - w / 2 - iconW;
                       }
                     }
-                    if (
-                      Math.abs(touchY) >=
-                      parentBox.height / 2 - h / 2 - iconW
-                    ) {
+                    if (Math.abs(touchY) >= parentBox.height / 2 - h / 2 - iconW) {
                       if (touchY < 0) {
                         touchY = -1 * (parentBox.height / 2 - h / 2 - iconW);
                       } else {
@@ -2375,8 +2123,7 @@ const icoConfig = require("./src/icoConfig.json");
                   eleConfig[idx].translate = `${touchX}px,${touchY}px,0`;
                   setConfig(eleReal[idx], eleConfig[idx]);
                 };
-                config.callback &&
-                  config.callback({ type: "move", obj: eleReal[idx] });
+                config.callback && config.callback({ type: "move", obj: eleReal[idx] });
                 canMove && changePosition();
               }
             };
@@ -2385,15 +2132,9 @@ const icoConfig = require("./src/icoConfig.json");
               event.stopImmediatePropagation();
               event.preventDefault();
               if (canMove) {
-                let x =
-                  event.changedTouches[0].pageX -
-                  eleReal[idx].getBoundingClientRect().left;
-                if (x > 0 && eleConfig[idx].scale > config.scale.min) {
-                  eleConfig[idx].scale -= config.scale.rate;
-                }
-                if (x < 0 && eleConfig[idx].scale < config.scale.max) {
-                  eleConfig[idx].scale += config.scale.rate;
-                }
+                let x = event.changedTouches[0].pageX - eleReal[idx].getBoundingClientRect().left;
+                if (x > 0 && eleConfig[idx].scale > config.scale.min) eleConfig[idx].scale -= config.scale.rate;
+                if (x < 0 && eleConfig[idx].scale < config.scale.max) eleConfig[idx].scale += config.scale.rate;
               }
 
               if (event.touches.length >= 2) {
@@ -2402,30 +2143,21 @@ const icoConfig = require("./src/icoConfig.json");
                   eleConfig[idx].scale = prevScale;
                 }
 
-                if (config.rotate.enable) {
-                  eleConfig[idx].rotate = event.rotation;
-                }
+                if (config.rotate.enable) eleConfig[idx].rotate = event.rotation;
               }
               setConfig(eleReal[idx], eleConfig[idx]);
-              config.callback &&
-                config.callback({ type: "resize", obj: eleReal[idx] });
+              config.callback && config.callback({ type: "resize", obj: eleReal[idx] });
             };
             //旋转事件
             touchRotate = event => {
               event.stopImmediatePropagation();
               event.preventDefault();
               const changeRotate = () => {
-                let angle = Math.atan2(
-                  event.changedTouches[0].pageY - centerPoint.y,
-                  event.changedTouches[0].pageX - centerPoint.x
-                );
-                eleConfig[idx].rotate =
-                  Math.floor(((angle - prevAngle) * 180) / Math.PI) *
-                  config.rotate.rate;
+                let angle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x);
+                eleConfig[idx].rotate = Math.floor(((angle - prevAngle) * 180) / Math.PI) * config.rotate.rate;
                 setConfig(eleReal[idx], eleConfig[idx]);
               };
-              config.callback &&
-                config.callback({ type: "rotate", obj: eleReal[idx] });
+              config.callback && config.callback({ type: "rotate", obj: eleReal[idx] });
               canMove && changeRotate();
             };
             //删除事件
@@ -2438,8 +2170,7 @@ const icoConfig = require("./src/icoConfig.json");
                 eleConfig[idx].scale = 100;
                 setConfig(eleReal[idx], eleConfig[idx]);
                 eleReal[idx].style.display = "none";
-                config.callback &&
-                  config.callback({ type: "delete", obj: eleReal[idx] });
+                config.callback && config.callback({ type: "delete", obj: eleReal[idx] });
               };
               canMove && deleteObj();
             };
@@ -2461,30 +2192,15 @@ const icoConfig = require("./src/icoConfig.json");
                 touchRotate(e);
               };
             }
-            if (config.icon && config.scale.enable)
-              eleReal[idx]
-                .querySelectorAll(`.Pd-resize`)[0]
-                .addEventListener("touchmove", touchResize);
+            if (config.icon && config.scale.enable) eleReal[idx].querySelectorAll(`.Pd-resize`)[0].addEventListener("touchmove", touchResize);
             if (config.icon && config.rotate.enable) {
-              eleReal[idx]
-                .querySelectorAll(`.Pd-rotate`)[0]
-                .addEventListener("touchstart", event => {
-                  centerPoint = getCenterPoint(eleReal[idx]);
-                  prevAngle =
-                    Math.atan2(
-                      event.changedTouches[0].pageY - centerPoint.y,
-                      event.changedTouches[0].pageX - centerPoint.x
-                    ) -
-                    (eleConfig[idx].rotate * Math.PI) / 180;
-                });
-              eleReal[idx]
-                .querySelectorAll(`.Pd-rotate`)[0]
-                .addEventListener("touchmove", touchRotate);
+              eleReal[idx].querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchstart", event => {
+                centerPoint = getCenterPoint(eleReal[idx]);
+                prevAngle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x) - (eleConfig[idx].rotate * Math.PI) / 180;
+              });
+              eleReal[idx].querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchmove", touchRotate);
             }
-            if (config.icon && config.delete)
-              eleReal[idx]
-                .querySelectorAll(`.Pd-delete`)[0]
-                .addEventListener("touchstart", touchDelete);
+            if (config.icon && config.delete) eleReal[idx].querySelectorAll(`.Pd-delete`)[0].addEventListener("touchstart", touchDelete);
 
             //隐藏操作按钮
             const hideBtn = () => {
@@ -2513,19 +2229,11 @@ const icoConfig = require("./src/icoConfig.json");
               if (config.icon) {
                 hideBtn();
                 event.stopImmediatePropagation();
-                JSON.parse(event.target.getAttribute("pd-move")) &&
-                  showBtn(event.target);
-                if (event.target.parentElement)
-                  JSON.parse(
-                    event.target.parentElement.getAttribute("pd-move")
-                  ) && showBtn(event.target.parentElement);
+                JSON.parse(event.target.getAttribute("pd-move")) && showBtn(event.target);
+                if (event.target.parentElement) JSON.parse(event.target.parentElement.getAttribute("pd-move")) && showBtn(event.target.parentElement);
               } else {
                 if (event.target.parentElement) {
-                  if (
-                    JSON.parse(
-                      event.target.parentElement.getAttribute("pd-move")
-                    )
-                  ) {
+                  if (JSON.parse(event.target.parentElement.getAttribute("pd-move"))) {
                     canMove = !0;
                   } else {
                     canMove = !1;
@@ -2546,18 +2254,11 @@ const icoConfig = require("./src/icoConfig.json");
               config.rotate.enable && (btn += icon.rotate);
               config.delete && (btn += icon.delete);
             }
-            this.append(
-              `<div class="Pd-ImgTransit" Pd-index="${imgIndex[idx]}">${btn}</div>`
-            );
+            this.append(`<div class="Pd-ImgTransit" Pd-index="${imgIndex[idx]}">${btn}</div>`);
             let imgCon = this.get.querySelectorAll(".Pd-ImgTransit")[idx];
             cur.style.transition = "transform .4s ease-in";
             [].slice.call(cur.attributes).forEach(attrs => {
-              if (
-                attrs.name !== "style" &&
-                attrs.name !== "id" &&
-                attrs.name !== "class"
-              )
-                imgCon.setAttribute(attrs.name, attrs.value);
+              if (attrs.name !== "style" && attrs.name !== "id" && attrs.name !== "class") imgCon.setAttribute(attrs.name, attrs.value);
             });
             imgCon.appendChild(cur);
             cur.removeAttribute("Pd-move");
@@ -2580,6 +2281,7 @@ const icoConfig = require("./src/icoConfig.json");
       }
       //FUNCTION:微信SDK
       wxSDK(options) {
+        const that = this;
         this.usingTrack("wxSDK");
         let sharePics;
         let hasIcon = !1;
@@ -2602,7 +2304,7 @@ const icoConfig = require("./src/icoConfig.json");
           //分享图(类型：字符串或数组)
           sharePics: sharePics || "https://pandorajs.com/share_ico.jpg",
           //分享链接(类型：字符串或数组)
-          shareLinks: location.href,
+          shareLinks: window.location.href,
           //调试(类型：布尔)
           debug: !1,
           //微信jsApiList(类型：数组)
@@ -2633,12 +2335,7 @@ const icoConfig = require("./src/icoConfig.json");
           console.warn("[警告] 没有检测到分享图标将使用默认值！");
         }
 
-        let jsApiList = [
-          "onMenuShareTimeline",
-          "onMenuShareAppMessage",
-          "updateTimelineShareData",
-          "updateAppMessageShareData",
-        ];
+        let jsApiList = ["onMenuShareTimeline", "onMenuShareAppMessage", "updateTimelineShareData", "updateAppMessageShareData"];
         if (config.jsApiList) {
           config.jsApiList.map(e => {
             jsApiList.push(e);
@@ -2653,76 +2350,42 @@ const icoConfig = require("./src/icoConfig.json");
           }
         };
 
+        const timeLine = {
+            title: isObj(config.title) ? config.title[0] : config.title,
+            link: isObj(config.shareLinks) ? config.shareLinks[0] : config.shareLinks,
+            imgUrl: isObj(config.sharePics) ? config.sharePics[0] : config.sharePics,
+          },
+          friend = {
+            title: isObj(config.title) ? config.title[1] : config.title,
+            link: isObj(config.shareLinks) ? config.shareLinks[1] : config.shareLinks,
+            imgUrl: isObj(config.sharePics) ? config.sharePics[1] : config.sharePics,
+            desc: config.desc,
+          };
+
         const success = res => {
           const { appId, timestamp, nonceStr, signature } = res;
-          wx.config({
-            debug: config.debug,
-            appId,
-            timestamp,
-            nonceStr,
-            signature,
-            jsApiList,
-          });
+          wx.config({ debug: config.debug, appId, timestamp, nonceStr, signature, jsApiList });
           wx.ready(() => {
             new Promise(next => {
-              const timeLine = {
-                  title: isObj(config.title) ? config.title[0] : config.title,
-                  link: isObj(config.shareLinks)
-                    ? config.shareLinks[0]
-                    : config.shareLinks,
-                  imgUrl: isObj(config.sharePics)
-                    ? config.sharePics[0]
-                    : config.sharePics,
-                },
-                friend = {
-                  title: isObj(config.title) ? config.title[1] : config.title,
-                  link: isObj(config.shareLinks)
-                    ? config.shareLinks[1]
-                    : config.shareLinks,
-                  imgUrl: isObj(config.sharePics)
-                    ? config.sharePics[1]
-                    : config.sharePics,
-                  desc: config.desc,
-                };
-
               if (wx.onMenuShareTimeline) {
                 const { title, link, imgUrl } = timeLine;
                 const { success, error } = config.callback;
+
                 wx.onMenuShareTimeline({ title, link, imgUrl, success, error });
               } else {
                 const { title, link, imgUrl } = timeLine;
                 const { success, error } = config.callback;
-                wx.updateTimelineShareData({
-                  title,
-                  link,
-                  imgUrl,
-                  success,
-                  error,
-                });
+                wx.updateTimelineShareData({ title, link, imgUrl, success, error });
               }
 
               if (wx.onMenuShareAppMessage) {
                 const { title, link, imgUrl, desc } = friend;
                 const { success, error } = config.callback;
-                wx.onMenuShareAppMessage({
-                  title,
-                  desc,
-                  link,
-                  imgUrl,
-                  success,
-                  error,
-                });
+                wx.onMenuShareAppMessage({ title, desc, link, imgUrl, success, error });
               } else {
                 const { title, link, imgUrl, desc } = friend;
                 const { success, error } = config.callback;
-                wx.updateAppMessageShareData({
-                  title,
-                  desc,
-                  link,
-                  imgUrl,
-                  success,
-                  error,
-                });
+                wx.updateAppMessageShareData({ title, desc, link, imgUrl, success, error });
               }
               next();
             }).then(config.callback.ready);
@@ -2730,10 +2393,7 @@ const icoConfig = require("./src/icoConfig.json");
         };
 
         scriptTag.onload = () => {
-          this.fetch({
-            url: `${config.apiUrl}${encodeURIComponent(location.href)}`,
-            success,
-          });
+          that.fetch({ url: `${config.apiUrl}${encodeURIComponent(window.location.href)}`, success });
         };
         return this;
       }
@@ -2766,8 +2426,7 @@ const icoConfig = require("./src/icoConfig.json");
 
         //进入视图
         const inView = obj => {
-          if (obj.getBoundingClientRect().y - window.innerHeight < 0)
-            return obj;
+          if (obj.getBoundingClientRect().y - window.innerHeight < 0) return obj;
           return !1;
         };
 
@@ -2782,10 +2441,8 @@ const icoConfig = require("./src/icoConfig.json");
                 let newWidth = Number(img.dataset.width) || img.naturalWidth,
                   newHeight = Number(img.dataset.height) || img.naturalHeight;
 
-                if (img.dataset.width)
-                  newHeight = (newWidth / img.naturalWidth) * img.naturalHeight;
-                if (img.dataset.height)
-                  newWidth = (newHeight / img.naturalHeight) * img.naturalWidth;
+                if (img.dataset.width) newHeight = (newWidth / img.naturalWidth) * img.naturalHeight;
+                if (img.dataset.height) newWidth = (newHeight / img.naturalHeight) * img.naturalWidth;
 
                 img.width = newWidth;
                 img.height = newHeight;
@@ -2794,8 +2451,7 @@ const icoConfig = require("./src/icoConfig.json");
                 img.dataset.width && img.removeAttribute("data-width");
                 img.dataset.height && img.removeAttribute("data-height");
                 cur++;
-                if (cur == lazyArr.length)
-                  window.removeEventListener("scroll", checker);
+                if (cur == lazyArr.length) window.removeEventListener("scroll", checker);
 
                 img.addEventListener("transitionend", () => {
                   img.style.transition = null;
