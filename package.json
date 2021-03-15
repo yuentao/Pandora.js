@@ -1,9 +1,11 @@
 {
   "name": "pandora",
   "version": "1.0.0",
-  "description": "```javascript\r window.alert(`文本内容`);\r window.confirm({\r   //文本内容(类型：字符串)\r   content: `提示内容`,\r   //确认按钮文本(类型：字符串)\r   confirmText: `确认`,\r   //取消按钮文本(类型：字符串)\r   cancelText: `取消`,\r   //点击确定(类型：方法)\r   success() {},\r   //点击取消(类型：方法)\r   fail() {},\r });\r ```",
+  "description": "Pandora.Js，专为新手优化的JavaScript插件，属性多样、功能丰富，足以满足大部分功能需求。",
   "main": "Pandora.js",
   "dependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/preset-env": "^7.13.10",
     "acorn": "^5.7.4",
     "acorn-dynamic-import": "^2.0.2",
     "ajv": "^4.11.8",
@@ -168,6 +170,7 @@
     "gulp": "^4.0.2",
     "gulp-chinese2unicode": "^1.0.1",
     "gulp-header": "^2.0.9",
+    "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
     "has": "^1.0.3",
     "has-ansi": "^2.0.0",
@@ -372,6 +375,7 @@
     "supports-color": "^2.0.0",
     "tapable": "^0.2.9",
     "template-polyfill": "^2.0.0",
+    "three": "^0.123.0",
     "timers-browserify": "^2.0.11",
     "to-arraybuffer": "^1.0.1",
     "to-fast-properties": "^1.0.3",
@@ -396,6 +400,7 @@
     "watchpack": "^1.7.4",
     "watchpack-chokidar2": "^2.0.0",
     "webpack": "^2.7.0",
+    "webpack-bundle-analyzer": "^4.3.0",
     "webpack-cli": "^3.3.12",
     "webpack-sources": "^1.4.3",
     "which": "^1.3.1",
@@ -411,18 +416,15 @@
   },
   "devDependencies": {},
   "scripts": {
-    "release": "npm run pack && npm run babel && npm run remote",
-    "prePush": "npm run pack && npm run babel && npm run local",
-    "pack": "webpack webpack.config.js",
-    "babel": "babel Pandora.min.js --out-file Pandora.min.js",
-    "local": "gulp local",
-    "remote": "gulp remote"
+    "prePush": "del Pandora.min.js && del Pandora.min.js.map && npm run pack && babel Pandora.min.js --out-file Pandora.min.js && gulp minify",
+    "release": "gulp upload",
+    "pack": "webpack webpack.config.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yuentao/Pandora.js.git"
   },
-  "author": "",
+  "author": "Yuantao",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/yuentao/Pandora.js/issues"

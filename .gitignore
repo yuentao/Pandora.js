@@ -6,3 +6,8 @@ src/_notes
 webpack.config.js
 gulpfile.js
 bin/
+.vscode/
+kit.html
+kit.js
+kit.min.js
+*.html

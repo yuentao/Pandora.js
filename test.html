@@ -3,35 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>嵌套页面路由</title>
-    <link rel="shortcut icon" href="https://www.pandorajs.com/favicon.ico" type="image/x-icon" />
+    <title>无标题文档</title>
     <style>
-      body {
-        margin: 0;
+      .block {
+        width: 100px;
+        height: 100px;
+        background: #000;
+      }
+      @keyframes animate {
+        to {
+          transform: translateX(20%);
+        }
       }
     </style>
   </head>
+
   <body>
-    <div id="app"></div>
-    <template route="/">
-      <iframe src="iframe.html"></iframe>
-    </template>
-    <template route="/test"><h1>asdad</h1></template>
+    <div id="app">
+      <img src="https://upload.pandorajs.com/image/7.jpg" alt="" />
+    </div>
   </body>
   <script src="Pandora.min.js"></script>
   <script>
-    var router = $("#app").Router({
-      routes: [
-        {
-          path: "/",
-        },
-        {
-          path: "/test",
-          callback(){
-            console.log(123);
-          }
-        },
-      ],
+    $("#app").ImgLoader({
+      callback() {
+        confirm("加载完成");
+      },
     });
   </script>
 </html>

@@ -5,22 +5,23 @@ require("core-js/es6/symbol");
 require("core-js/es6/array");
 require("core-js/es6/string");
 const icoConfig = require("./src/icoConfig.json");
+// 缺省字段
+const Alphabet = ["active", "local", "localhost", "pandorajs.com", "127.0.0.1", "192.168", "inherit", "提示", "错误", "警告"];
 
 (() => {
   //兼容处理&&基础方法
   // 启用插件追踪
   window.enableTrack = !0;
 
-  // PROTO: 是否符合追踪条件
+  // 是否符合追踪条件
   const canTrack = () => {
-    const domain = document.domain || "local";
-    if (window.enableTrack && domain.indexOf("pandorajs.com") < 0 && domain.indexOf("192.168") < 0 && domain != "local" && domain != "localhost" && domain != "127.0.0.1") {
-      return !0;
-    }
+    const domain = document.domain || Alphabet[1];
+    if (window.enableTrack && domain.indexOf(Alphabet[3]) < 0 && domain.indexOf(Alphabet[5]) < 0 && domain != Alphabet[1] && domain != Alphabet[2] && domain != Alphabet[4]) return !0;
     return !1;
   };
+  canTrack() && console.info(`[${Alphabet[7]}] 已启用使用情况跟踪，如需关闭请修改 window.enableTrack (类型：布尔)`);
 
-  //PROTO: requestAnimationFrame
+  //requestAnimationFrame
   if (!window.requestAnimationFrame) {
     window.requestAnimationFrame = callback => {
       let currTime = new Date().getTime(),
@@ -43,13 +44,13 @@ const icoConfig = require("./src/icoConfig.json");
   };
 
   let rootText = "";
-  if (!getRoot("alertTheme")) rootText += "/*alert背景*/--alertTheme:inherit;";
-  if (!getRoot("alertBg")) rootText += "/*alert遮罩*/--alertBg:inherit;";
+  if (!getRoot("alertTheme")) rootText += `/*alert背景*/--alertTheme:${Alphabet[6]};`;
+  if (!getRoot("alertBg")) rootText += `/*alert遮罩*/--alertBg:${Alphabet[6]};`;
   if (!getRoot("alertFontSize")) rootText += "/*alert字体大小*/--alertFontSize:1rem;";
   if (!getRoot("alertColor")) rootText += "/*alert字体颜色*/--alertColor:#000;";
 
-  if (!getRoot("confirmTheme")) rootText += "/*confirm背景*/--confirmTheme:inherit;";
-  if (!getRoot("confirmBg")) rootText += "/*confirm遮罩*/--confirmBg:inherit;";
+  if (!getRoot("confirmTheme")) rootText += `/*confirm背景*/--confirmTheme:${Alphabet[6]};`;
+  if (!getRoot("confirmBg")) rootText += `/*confirm遮罩*/--confirmBg:${Alphabet[6]};`;
   if (!getRoot("confirmBtnBg")) rootText += "/*confirm按钮背景*/--confirmBtnBg:#b6c781;";
   if (!getRoot("confirmFontSize")) rootText += "/*confirm字体大小*/--confirmFontSize:1rem;";
   if (!getRoot("confirmColor")) rootText += "/*confirm字体颜色*/--confirmColor:#000;";
@@ -61,34 +62,47 @@ const icoConfig = require("./src/icoConfig.json");
 
   //是否已经显示遮罩
   let isMaskShow = !1;
-  //PROTO: 修改原生alert
-  window.alert = content => {
-    let mask = document.createElement("div"),
-      maskBg = !isMaskShow ? getRoot("alertBg") : null,
-      div = document.createElement("div"),
-      msg = document.createElement("p"),
-      blur = document.createElement("div"),
-      plan = document.createElement("div"),
-      timeout,
-      Theme = getRoot("alertTheme"),
-      fontSize = getRoot("alertFontSize"),
-      color = getRoot("alertColor");
-
+  const setMaskCSS = (mask, maskBg) => {
     mask.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 99999;
-      width: 100%;
-      height: 100%;
-      display:flex;
-      justify-content:center;
-      align-items: flex-end;
-      background: inherit;
-      background: ${maskBg};`;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  display:flex;
+  justify-content:center;
+  background: ${Alphabet[6]};
+  background: ${maskBg};`;
+  };
 
+  const setPlanCSS = (plan, maskBg) => {
+    plan.style.cssText = `
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;`;
+
+    if (maskBg) plan.style.cssText += `background:rgba(255, 255, 255, 0.66);`;
+  };
+  //修改原生alert
+  window.alert = content => {
+    let timeout,
+      mask = document.createElement(`div`),
+      maskBg = !isMaskShow ? getRoot(`alertBg`) : null,
+      div = document.createElement(`div`),
+      msg = document.createElement(`p`),
+      blur = document.createElement(`div`),
+      plan = document.createElement(`div`),
+      Theme = getRoot(`alertTheme`),
+      fontSize = getRoot(`alertFontSize`),
+      color = getRoot(`alertColor`);
+
+    setMaskCSS(mask, maskBg);
+    mask.style.cssText += `align-items: flex-end;`;
     div.style.cssText = `
-      background: inherit;
+      background: ${Alphabet[6]};
       background:${Theme};
       text-align: center;
       color: ${color};
@@ -102,123 +116,92 @@ const icoConfig = require("./src/icoConfig.json");
       border-radius: 6px;
       position: relative;
       overflow: hidden;`;
-
     msg.style.cssText = `
       margin:0;
       position: relative;`;
-
     blur.style.cssText = `
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: inherit;
+      background: ${Alphabet[6]};
       filter: blur(10px) saturate(2);`;
-
-    plan.style.cssText = `
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background:rgba(255, 255, 255, 0.66);`;
+    setPlanCSS(plan);
 
     msg.innerText = content ? content.toString() : "";
     div.appendChild(blur);
     div.appendChild(plan);
     div.appendChild(msg);
-
     mask.appendChild(div);
     document.body.appendChild(mask);
 
     mask.onclick = () => {
       clearTimeout(timeout);
       document.body.removeChild(mask);
-      mask = null;
-      div = null;
-      timeout = null;
-      color = null;
+      mask = div = timeout = color = null;
     };
 
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      div.style.opacity = 0;
+      div.style.opacity = "0";
       div.addEventListener("transitionend", () => {
         document.body.removeChild(mask);
-        mask = null;
-        div = null;
-        timeout = null;
-        color = null;
+        mask = div = timeout = color = null;
       });
     }, 800);
   };
-  //PROTO: 修改原生confirm
+  //修改原生confirm
   window.confirm = config => {
-    let content, confirmText, cancelText, success, fail;
-    let mask = document.createElement("div"),
-      div = document.createElement("div"),
-      blur = document.createElement("div"),
-      plan = document.createElement("div"),
-      msg = document.createElement("p"),
-      confirm = document.createElement("button"),
-      cancel = document.createElement("button"),
-      maskBg = !isMaskShow ? getRoot("confirmBg") : null,
-      btnBg = getRoot("confirmBtnBg"),
-      Theme = getRoot("confirmTheme"),
-      fontSize = getRoot("confirmFontSize"),
-      color = getRoot("confirmColor"),
-      btnColor = getRoot("confirmBtnColor");
-    const showCancel = config.showCancel == undefined ? true : config.showCancel;
+    let content,
+      confirmText,
+      cancelText,
+      success,
+      fail,
+      mask = document.createElement(`div`),
+      div = document.createElement(`div`),
+      blur = document.createElement(`div`),
+      plan = document.createElement(`div`),
+      msg = document.createElement(`p`),
+      confirm = document.createElement(`button`),
+      cancel = document.createElement(`button`),
+      maskBg = !isMaskShow ? getRoot(`confirmBg`) : null,
+      btnBg = getRoot(`confirmBtnBg`),
+      Theme = getRoot(`confirmTheme`),
+      fontSize = getRoot(`confirmFontSize`),
+      color = getRoot(`confirmColor`),
+      btnColor = getRoot(`confirmBtnColor`);
+    const showConfirm = config.showConfirm == undefined ? true : config.showConfirm,
+      showCancel = config.showCancel == undefined ? true : config.showCancel;
 
-    mask.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 99999;
-      width: 100%;
-      height: 100%;
-      display:flex;
-      justify-content:center;
-      align-items: center;
-      background: inherit;
-      background: ${maskBg};`;
-
+    setMaskCSS(mask, maskBg);
+    mask.style.cssText += "align-items: center;";
     div.style.cssText = `
-      background: inherit;
+      background: ${Alphabet[6]};
       background:${Theme};
       text-align: center;
       color: ${color};
       font-size: ${fontSize};
-      padding: 2.5em 1.5em;
-      max-width:85vw;
+      padding: 1.5em;
+      max-width:75vw;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
       border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 6px;
       position: relative;
       overflow: hidden;`;
-
     blur.style.cssText = `
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: inherit;
+      background: ${Alphabet[6]};
       filter: blur(10px) saturate(2);`;
-
-    plan.style.cssText = `
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background:rgba(255, 255, 255, 0.66);`;
+    setPlanCSS(plan);
 
     msg.style.cssText = `margin:0;position: relative;line-height: 2;`;
-    let buttonCSS = `position: relative;margin: 2.5em 1em 0 1em;font-size: .8em;appearance: none;background: ${btnBg};color: ${btnColor};border: none;padding: 1em 3em;cursor: pointer;outline: none;`;
-    confirm.style.cssText = buttonCSS;
-    cancel.style.cssText = buttonCSS;
+    const buttonCSS = `position: relative;margin: 2.5em 1em 0 1em;font-size: .8em;appearance: none;background: ${btnBg};color: ${btnColor};border: none;padding: 1em 3em;cursor: pointer;outline: none;`;
+    confirm.style.cssText = cancel.style.cssText = buttonCSS;
 
     const removeConfirm = () => {
       document.body.removeChild(mask);
@@ -230,10 +213,10 @@ const icoConfig = require("./src/icoConfig.json");
       div.appendChild(blur);
       div.appendChild(plan);
       div.appendChild(msg);
-      confirm.innerText = confirmText ? confirmText.toString() : "确认";
+      if (showConfirm) confirm.innerText = confirmText ? confirmText.toString() : "确认";
       if (showCancel) cancel.innerText = cancelText ? cancelText.toString() : "取消";
 
-      div.appendChild(confirm);
+      showConfirm && div.appendChild(confirm);
       showCancel && div.appendChild(cancel);
 
       mask.appendChild(div);
@@ -254,31 +237,34 @@ const icoConfig = require("./src/icoConfig.json");
     }
 
     return new Promise((ok, no) => {
-      confirm.onclick = () => {
-        removeConfirm();
-        success ? success() : ok();
-      };
+      if (showConfirm)
+        confirm.onclick = () => {
+          removeConfirm();
+          success ? success() : ok();
+        };
       if (showCancel)
         cancel.onclick = () => {
           removeConfirm();
-          fail ? fail() : no("[错误] 没有可以执行的回调");
+          fail ? fail() : no();
         };
     });
   };
-  //PROTO: loading遮罩
+  //loading遮罩
+  const LoadingName = "Pd_loader";
   window.showLoading = () => {
-    let mask = document.createElement("div");
-    let svg = new Image();
+    const mask = document.createElement("div"),
+      svg = new Image();
+
     svg.src = icoConfig.load;
-    mask.id = "Pd_loader";
+    mask.id = `${LoadingName}`;
     mask.style.cssText = "width:100%;height:100%;position: fixed;z-index: 99;top: 0;left: 0;background:rgba(0,0,0,.65);display:flex;align-items: center; justify-content: center;";
 
-    document.querySelector("#Pd_loader") && document.body.removeChild(document.querySelector("#Pd_loader"));
+    document.querySelector(`#${LoadingName}`) && document.body.removeChild(document.querySelector(`#${LoadingName}`));
     mask.appendChild(svg);
     document.body.appendChild(mask);
   };
   window.hideLoading = () => {
-    document.querySelector("#Pd_loader") && document.body.removeChild(document.querySelector("#Pd_loader"));
+    document.querySelector(`#${LoadingName}`) && document.body.removeChild(document.querySelector(`#${LoadingName}`));
   };
 
   //内置方法
@@ -288,22 +274,18 @@ const icoConfig = require("./src/icoConfig.json");
       this.getEle = ele => {
         const typeArr = ["[object Window]", "[object HTMLDocument]"];
         if (typeArr.includes(ele + "")) return window;
-        if (document.querySelectorAll(ele).length > 1) {
-          return document.querySelectorAll(ele);
+
+        if (document.querySelectorAll(ele)) {
+          if (document.querySelectorAll(ele).length > 1) {
+            return document.querySelectorAll(ele);
+          } else {
+            return document.querySelector(ele);
+          }
         } else {
-          return document.querySelector(ele);
+          return console.error(`[${Alphabet[8]}] 没有找到名称为 ${this.element} 的元素`);
         }
       };
-      this.init = () => {
-        const ele = this.getEle(element);
-        try {
-          ele.eventList = [];
-          return ele;
-        } catch (err) {
-          console.error(`[错误] 没有找到名称为 ${this.element} 的元素`);
-          return !1;
-        }
-      };
+      this.init = () => this.getEle(element);
       this.get = this.init();
       this.guid = () => {
         const S4 = () => {
@@ -311,9 +293,9 @@ const icoConfig = require("./src/icoConfig.json");
         };
         return `PandoraAPI_${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`;
       };
-      //PROTO: 生产PandoraId
+      //生产PandoraId
       this.pid = this.guid();
-      //PROTO: 默认参数赋值
+      //默认参数赋值
       this.extend = (config, options) => {
         if (!options) {
           options = config;
@@ -324,29 +306,39 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return options;
       };
-      //PROTO: 选择指定下标元素
+      //选择指定下标元素
       this.eq = index => {
-        this.get = this.getEle(element)[index];
-        !this.get && console.error("[错误] 没有找到该下标");
+        try {
+          this.get = this.getEle(element)[index];
+        } catch (err) {
+          console.error(`[${Alphabet[8]}] 没有找到该下标\n${err}`);
+        }
         return this;
       };
-      //PROTO: 选择子级元素
+      //选择子级元素
       this.child = name => {
         const ele = this.get;
-        this.get = ele.querySelectorAll(name);
-        this.get.length == 0 && console.error("[错误] 没有找到该子级");
+        try {
+          this.get = ele.querySelectorAll(name);
+        } catch (err) {
+          console.error(`[${Alphabet[8]}] 没有找到该子级\n${err}`);
+        }
         return this;
       };
-      //PROTO: 选择父级
+      //选择父级
       this.parent = () => {
         const ele = this.get;
-        this.get = ele.parentElement;
+        try {
+          this.get = ele.parentElement;
+        } catch (err) {
+          console.error(`[${Alphabet[8]}] 没有找到该父级\n${err}`);
+        }
         return this;
       };
-      //PROTO: 选择其他同级元素
+      //选择其他同级元素
       this.siblings = name => {
-        const ele = this.get;
-        const parent = this.parent();
+        const ele = this.get,
+          parent = this.parent();
         let siblingArr = [];
 
         for (let e of parent.child(name).get) {
@@ -355,29 +347,25 @@ const icoConfig = require("./src/icoConfig.json");
         this.get = siblingArr;
         return this;
       };
-      //PROTO: 选择上一个同级元素
+      //选择上一个同级元素
       this.prev = () => {
         const ele = this.get;
         this.get = ele.previousElementSibling;
         return this;
       };
-      //PROTO: 选择下一个同级元素
+      //选择下一个同级元素
       this.next = () => {
         const ele = this.get;
         this.get = ele.nextElementSibling;
         return this;
       };
-      //PROTO: 遍历元素集
+      //遍历元素集
       this.each = fn => {
         const ele = this.get;
-        let i = 0;
-        for (let a of ele) {
-          fn && fn(this.eq(i), i);
-          i++;
-        }
+        for (let i = 0; i < ele.length; i++) fn && fn(this.eq(i), i);
         return this;
       };
-      //PROTO: 获取或修改样式
+      //获取或修改样式
       this.css = name => {
         const ele = this.get;
         let style = [];
@@ -393,7 +381,7 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return this;
       };
-      //PROTO: 获取或插入文本
+      //获取或插入文本
       this.text = str => {
         const ele = this.get;
         if (str != undefined) {
@@ -403,7 +391,7 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return this;
       };
-      //PROTO: 获取或插入HTML
+      //获取或插入HTML
       this.html = content => {
         const ele = this.get;
         if (content) {
@@ -414,7 +402,7 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return this;
       };
-      //PROTO: 获取或插入值
+      //获取或插入值
       this.val = value => {
         const ele = this.get;
         if (value != null && value != undefined) {
@@ -422,17 +410,13 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return ele.value;
       };
-      //PROTO: 插入元素
+      //插入元素
       this.prepend = target => {
         const ele = this.get;
         if (ele.length) {
-          for (let e of ele) {
-            const Thetarget = `${target}${e.innerHTML}`;
-            e.innerHTML = Thetarget;
-          }
+          for (let e of ele) e.innerHTML = `${target}${e.innerHTML}`;
         } else {
-          const Thetarget = `${target}${ele.innerHTML}`;
-          ele.innerHTML = Thetarget;
+          ele.innerHTML = `${target}${ele.innerHTML}`;
         }
         return this;
       };
@@ -455,7 +439,7 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return this;
       };
-      //PROTO: 清空容器
+      //清空容器
       this.empty = () => {
         const ele = this.get;
         while (ele.firstChild) {
@@ -463,27 +447,27 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return this;
       };
-      //PROTO: 移除元素
+      //移除元素
       this.remove = () => {
         const ele = this.get;
         try {
           ele.parentElement.removeChild(ele);
         } catch (err) {
-          console.error("[错误] 没有找到可以移除的元素");
+          console.error(`[${Alphabet[8]}] 没有找到可以移除的元素\n${err}`);
         }
         return this;
       };
-      //PROTO: 添加class
+      //添加class
       this.addClass = name => {
-        const ele = this.get;
-        const addThat = ele => {
-          const beforeClass = ele.classList.value;
-          if (beforeClass) {
-            if (beforeClass.indexOf(name) < 0) ele.className = `${beforeClass} ${name.trim()}`;
-          } else {
-            ele.className = name.trim();
-          }
-        };
+        const ele = this.get,
+          addThat = ele => {
+            const beforeClass = ele.classList.value;
+            if (beforeClass) {
+              if (beforeClass.indexOf(name) < 0) ele.className = `${beforeClass} ${name.trim()}`;
+            } else {
+              ele.className = name.trim();
+            }
+          };
         if (ele.length > 1) {
           for (let a of ele) addThat(a);
         } else {
@@ -491,18 +475,18 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return this;
       };
-      //PROTO: 移除class
+      //移除class
       this.removeClass = name => {
-        const ele = this;
-        const removeThat = ele => {
-          let beforeClass = ele.classList.value.split(" "),
-            afterClass;
-          beforeClass.map((cur, idx) => {
-            if (cur === name) beforeClass.splice(idx, 1);
-          });
-          afterClass = beforeClass.join(" ");
-          ele.className = afterClass;
-        };
+        const ele = this,
+          removeThat = ele => {
+            let beforeClass = ele.classList.value.split(" "),
+              afterClass;
+            beforeClass.map((cur, idx) => {
+              if (cur === name) beforeClass.splice(idx, 1);
+            });
+            afterClass = beforeClass.join(" ");
+            ele.className = afterClass;
+          };
 
         if (ele.length) {
           for (let e of ele.get) removeThat(e);
@@ -511,17 +495,17 @@ const icoConfig = require("./src/icoConfig.json");
         }
         return this;
       };
-      //PROTO: 是否拥有class名
+      //是否拥有class名
       this.hasClass = name => {
-        const ele = this.get;
-        const classlist = ele.classList.value.indexOf(" ") > -1 ? ele.classList.value.split(" ") : ele.classList.value;
+        const ele = this.get,
+          classlist = ele.classList.value.indexOf(" ") > -1 ? ele.classList.value.split(" ") : ele.classList.value;
         if (classlist.indexOf(name) > -1) {
           return !0;
         } else {
           return !1;
         }
       };
-      //PROTO: 添加属性
+      //添加属性
       this.attr = (inject, val) => {
         const ele = this.get;
         if (typeof inject == "object") {
@@ -538,65 +522,65 @@ const icoConfig = require("./src/icoConfig.json");
           }
         }
       };
-      //PROTO: 移除属性
+      //移除属性
       this.removeAttr = name => {
         const ele = this.get;
         ele.removeAttribute(name);
         return this;
       };
-      //PROTO: 绑定事件
+      //绑定事件
       this.bind = (eventName, fn, bool = !1) => {
         const ele = this.get;
-        ele.addEventListener(eventName, fn, bool);
-        ele.eventList.push({ name: eventName, callback: fn });
+        if (ele.length) {
+          ele.forEach(the => {
+            the.addEventListener(eventName, fn, bool);
+            the.eventList = [];
+            the.eventList.push({ name: eventName, callback: fn });
+          });
+        } else {
+          ele.addEventListener(eventName, fn, bool);
+          ele.eventList = [];
+          ele.eventList.push({ name: eventName, callback: fn });
+        }
         return this;
       };
-      //PROTO: 解绑事件
+      //解绑事件
       this.unbind = eventName => {
         const ele = this.get;
-        ele.eventList.map((e, i) => {
-          if (e.name === eventName) {
-            ele.removeEventListener(eventName, e.callback);
-            ele.eventList.splice(i, 1);
-          }
-        });
-        return this;
-      };
-      //PROTO: 添加事件
-      this.addEvent = (eventName, fn) => {
-        const ele = this.get;
-        const addEvent = (ele, index = null) => {
-          ele[eventName] = e => {
-            let event = e;
-            event.current = ele;
-            fn(event, index);
-          };
-        };
         if (ele.length) {
-          let index = 0;
-          for (let e of ele) {
-            addEvent(e, index);
-            index++;
-          }
+          ele.forEach(the => {
+            the.eventList.map((e, i) => {
+              if (e.name === eventName) {
+                the.removeEventListener(eventName, e.callback);
+                the.eventList.splice(i, 1);
+              }
+            });
+          });
         } else {
-          addEvent(ele);
+          ele.eventList.map((e, i) => {
+            if (e.name === eventName) {
+              ele.removeEventListener(eventName, e.callback);
+              ele.eventList.splice(i, 1);
+            }
+          });
         }
-      };
-      //PROTO: 点击事件
-      this.click = fn => {
-        this.addEvent("onclick", fn);
         return this;
       };
-      //PROTO: 长按事件
+      //点击事件
+      this.click = fn => {
+        this.bind("click", fn);
+        return this;
+      };
+      //长按事件
       this.taping = fn => {
         const ele = this.get;
+        let infiniteFrame;
         try {
           window.ontouchstart;
         } catch (err) {
           ele.onclick = fn;
           return this;
         }
-        let infiniteFrame;
         const infiniteFn = () => {
           fn();
           infiniteFrame = requestAnimationFrame(infiniteFn);
@@ -611,80 +595,45 @@ const icoConfig = require("./src/icoConfig.json");
           return this;
         };
       };
-      //失焦事件
-      this.blur = fn => {
-        this.addEvent("onblur", fn);
-        return this;
-      };
-      //PROTO: 聚焦事件
-      this.focus = fn => {
-        this.addEvent("onfocus", fn);
-        return this;
-      };
-      //PROTO: 改变事件
-      this.change = fn => {
-        this.addEvent("onchange", fn);
-        return this;
-      };
-      //PROTO: 输入事件
-      this.input = fn => {
-        this.addEvent("oninput", fn);
-        return this;
-      };
-      //PROTO: 悬浮事件
-      this.hover = (In, Out) => {
-        this.addEvent("onmouseover", In);
-        Out && this.addEvent("onmouseout", Out);
-        return this;
-      };
-      //PROTO: 滚动事件
-      this.scroll = fn => {
-        this.addEvent("onscroll", fn);
-        return this;
-      };
-      //PROTO: 过渡结束事件
+      //过渡结束事件
       this.transitionEnd = fn => {
         try {
           window.ontransitionend;
-          this.addEvent("transitionend", fn);
+          this.bind("transitionend", fn);
         } catch (err) {
-          console.error("[错误] 不支持ontransitionend事件");
+          console.error(`[${Alphabet[8]}] 不支持ontransitionend事件\n${err}`);
           return !1;
         }
         return this;
       };
-      //PROTO: 动画结束事件
+      //动画结束事件
       this.animationEnd = fn => {
         try {
-          this.addEvent("animationend", fn);
+          window.onanimationend;
+          this.bind("animationend", fn);
         } catch (err) {
-          console.error("[错误] 不支持animationend事件");
+          console.error(`[${Alphabet[8]}] 不支持animationend事件\n${err}`);
           return !1;
         }
         return this;
       };
-      //PROTO: 显示
+      //显示
       this.show = callback => {
-        this.attr("beforeHide") ? this.css({ display: this.attr("beforeHide") }) : this.css({ display: "block" });
-        callback && setTimeout(callback, 0);
+        this.attr(`beforeHide`) ? this.css({ display: this.attr(`beforeHide`) }) : this.css({ display: "block" });
+        callback && setTimeout(callback);
         return this;
       };
-      //PROTO: 隐藏
+      //隐藏
       this.hide = callback => {
         if (this.get.length) {
-          for (let a of this.get) {
-            this.get = a;
-            if (!this.attr("beforeHide")) this.attr("beforeHide", this.css("display") == "none" ? "block" : this.css("display"));
-            this.css({ display: "none" });
-          }
-        } else {
-          if (!this.attr("beforeHide")) this.attr("beforeHide", this.css("display") == "none" ? "block" : this.css("display"));
-          this.css({ display: "none" });
+          for (let a of this.get) this.get = a;
         }
-        callback && setTimeout(callback, 0);
+        if (!this.attr(`beforeHide`)) this.attr("beforeHide", this.css(`display`) == "none" ? "block" : this.css(`display`));
+        this.css({ display: "none" });
+        callback && setTimeout(callback);
         return this;
       };
-      //PROTO: ajax
+      //ajax
       this.ajax = options => {
         let config = {
           //接口地址(类型：字符串)
@@ -694,7 +643,7 @@ const icoConfig = require("./src/icoConfig.json");
           //是否同步请求(类型：布尔)
           async: !1,
           //设置请求头(类型：对象)
-          headers: null,
+          headers: { "Content-type": "application/x-www-form-urlencoded" },
           //发送数据类型(类型：字符串；可选参数：json、form)
           dataType: "json",
           //发送数据(类型：json或form；格式必须和发送数据类型保持一致)
@@ -703,19 +652,22 @@ const icoConfig = require("./src/icoConfig.json");
           success: null,
           //失败回调方法(类型：方法)
           error: null,
+          // 加载中回调方法(类型：方法)
+          progress: null,
         };
         config = this.extend(config, options);
-        const http = new XMLHttpRequest();
+        const http = new XMLHttpRequest(),
+          { url, type, async, headers, dataType, data, success, error, progress } = config;
         let params;
-        if (config.dataType == "json") {
-          if (config.data)
-            params = Object.keys(config.data)
+        if (dataType == "json") {
+          if (data)
+            params = Object.keys(data)
               .map(key => {
-                return `${encodeURIComponent(key)}=${encodeURIComponent(config.data[key])}`;
+                return `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`;
               })
-              .join("&");
+              .join(`&`);
         } else {
-          params = config.data;
+          params = data;
         }
 
         http.onload = () => {
@@ -724,30 +676,33 @@ const icoConfig = require("./src/icoConfig.json");
             try {
               JSON.parse(res);
             } catch (err) {
-              config.success && config.success(res);
+              success && success(res);
               return !1;
             }
-            config.success && config.success(JSON.parse(res));
+            success && success(JSON.parse(res));
+          } else {
+            error && error();
           }
         };
-        http.onerror = config.error || null;
-        http.open(config.type.toUpperCase(), config.url, config.async);
 
-        if (config.headers) {
-          for (let keys of config.headers) http.setRequestHeader(keys, config.headers[keys]);
-        } else {
-          if (config.dataType == "json") http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        }
+        http.onerror = error;
+        http.open(type.toUpperCase(), url, async);
+        http.upload.onprogress = event => {
+          if (event.lengthComputable) {
+            progress && progress(Math.floor((event.loaded / event.total) * 100));
+          }
+        };
 
+        for (let keys in headers) http.setRequestHeader(keys, headers[keys]);
         http.send(params);
       };
-      //PROTO: fetch
+      //fetch
       this.fetch = options => {
         let config = {
           //接口地址(类型：字符串)
           url: null,
           //设置请求头(类型：对象)
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-type": "application/x-www-form-urlencoded" },
           //请求类型(类型：字符串；可选参数：post、get)
           type: "get",
           //发送数据(类型：JSON)
@@ -758,71 +713,65 @@ const icoConfig = require("./src/icoConfig.json");
           error: null,
         };
         config = this.extend(config, options);
-        let params;
-        config.data && (params = JSON.stringify(config.data));
+        const { url, data, headers, type, success, error } = config;
 
-        fetch(config.url, {
-          body: params,
-          headers: config.headers || { "Content-type": "application/x-www-form-urlencoded" },
-          method: config.type.toLocaleUpperCase(),
-        })
+        fetch(url, { body: data, headers, method: type.toLocaleUpperCase() })
           .then(res => {
             if (res.ok) {
               return res.json();
             } else {
-              console.error("[错误] 请求地址发生错误！");
+              console.error(`[${Alphabet[8]}] 请求地址发生错误！\n${res}`);
             }
           })
-          .then(success => {
-            config.success && config.success(success);
+          .then(res => {
+            success && success(res);
           })
-          .catch(error => {
-            config.error && config.error(error);
+          .catch(res => {
+            error && error(res);
           });
       };
-      //PROTO: 表单序列化
+      //表单序列化
       this.serialize = () => {
         const ele = this.get;
         let obj = {};
-        for (let e of ele.querySelectorAll("*")) {
-          const keyName = e.getAttribute("name");
-          if (keyName) obj[keyName] = e.value;
+        for (let e of ele.querySelectorAll(`*`)) {
+          if (e.getAttribute(`name`)) {
+            const keyName = e.getAttribute(`name`);
+            if (keyName) obj[keyName] = e.value;
+          }
         }
         return obj;
       };
-      //PROTO: 使用追踪
+      //使用追踪
       this.usingTrack = fnName => {
         const form = navigator.userAgent,
           domain = window.location.href;
-        if (canTrack()) {
-          console.info("[提示] 已启用使用情况跟踪，如需关闭请修改 window.enableTrack");
-          this.fetch({
-            url: `https://api.pandorajs.com/Pd_track?usageFunction=${fnName}&usagePlatform=${form}&usageDomain=${domain}`,
-          });
-        }
+        canTrack() && this.fetch({ url: `https://api.${Alphabet[3]}/Pd_track?usageFunction=${fnName}&usagePlatform=${form}&usageDomain=${domain}` });
       };
-      //PROTO: 全局变量
+      //全局变量
       this.globalData = {};
-      //PROTO: 设置全局变量
+      //设置全局变量
       this.setData = obj => {
         return new Promise((success, fail) => {
-          try {
-            for (let key in obj) this.globalData[key] = obj[key];
-            success();
-          } catch (err) {
-            console.error("[错误] 动态变量修改失败！");
-            fail(err);
+          for (let key in obj) {
+            try {
+              this.globalData[key] = obj[key];
+            } catch (err) {
+              console.error(`[${Alphabet[8]}] 动态变量修改失败！${err}`);
+              fail(err);
+            }
           }
+          success();
         });
       };
-      //PROTO: 模板渲染
+      //模板渲染
       this.template = (route, container) => {
         return new Promise((success, fail) => {
           const temp = (() => {
             let cur;
-            let temp = document.querySelectorAll("template");
-            for (let a = 0; a < temp.length; a++) {
-              if (temp[a].getAttribute("route") == route) cur = temp[a];
+            const template = document.querySelectorAll(`template`);
+            for (let a = 0; a < template.length; a++) {
+              if (template[a].getAttribute(`route`) == route) cur = template[a];
             }
             return cur;
           })();
@@ -832,23 +781,23 @@ const icoConfig = require("./src/icoConfig.json");
             container.appendChild(document.importNode(temp.content, !0));
             success();
           } else {
-            console.error(`[错误] 不存在以下路由模板：${route}`);
-            fail();
+            console.error(`[${Alphabet[8]}] 不存在以下路由模板：${route}`);
+            fail(`${route}`);
           }
         });
       };
-      //PROTO: 获取url参数并转换成对象
+      //获取url参数并转换成对象
       this.getParams = () => {
-        let url = location.href.split("?");
-        if (location.href.indexOf("?") > -1) {
+        const url = location.href.split(`?`);
+        if (location.href.indexOf(`?`) > -1) {
           let obj = {};
-          if (url[1].split("&")) {
-            let params = url[1].split("&");
+          if (url[1].split(`&`)) {
+            const params = url[1].split(`&`);
             params.map(v => {
-              obj[v.split("=")[0]] = v.split("=")[1];
+              obj[v.split(`=`)[0]] = v.split(`=`)[1];
             });
           } else {
-            obj[url[1].split("=")[0]] = obj[url[1].split("=")[1]];
+            obj[url[1].split(`=`)[0]] = obj[url[1].split(`=`)[1]];
           }
           return obj;
         } else {
@@ -858,7 +807,7 @@ const icoConfig = require("./src/icoConfig.json");
       // HASH改变
       this.hashChange = callback => {
         const getRoutePath = () => {
-          if (location.hash.indexOf("#") > -1) {
+          if (location.hash.indexOf(`#`) > -1) {
             return location.hash.match(/#(\S*)\?/) == null ? location.hash.match(/#(\S*)/)[1] : location.hash.match(/#(\S*)\?/)[1];
           } else {
             return !1;
@@ -875,7 +824,7 @@ const icoConfig = require("./src/icoConfig.json");
       constructor(element) {
         super(element);
       }
-      //FUNCTION:Mustache渲染
+      //Mustache渲染
       Mush(options) {
         let config = {
           //渲染数据(类型：对象)
@@ -891,6 +840,8 @@ const icoConfig = require("./src/icoConfig.json");
           pattern = new RegExp("{{.*?}}", "g"),
           patterns = new RegExp("{{.*?}}"),
           matchValue;
+        const that = this,
+          { data, Init, Update } = config;
 
         // 重构渲染数据
         const getObj = res => {
@@ -903,7 +854,7 @@ const icoConfig = require("./src/icoConfig.json");
         const getMush = () => {
           let r = [];
           Html.match(pattern).forEach((e, index) => {
-            r[index] = e.split("{{")[1].split("}}")[0];
+            r[index] = e.split(`{{`)[1].split(`}}`)[0];
           });
           return r;
         };
@@ -914,9 +865,9 @@ const icoConfig = require("./src/icoConfig.json");
           return new Promise(next => {
             Html = bHtml;
             for (let value of matchValue) {
-              for (let keyName in config.data) value === keyName && (Html = Html.replace(patterns, config.data[value].toString() || ""));
+              for (let keyName in data) value === keyName && (Html = Html.replace(patterns, data[value].toString() || ""));
             }
-            this.html(Html);
+            that.html(Html);
             next();
           });
         };
@@ -935,42 +886,42 @@ const icoConfig = require("./src/icoConfig.json");
 
         //遍历变量是否被动态修改
         realVal.forEach(e => {
-          Object.defineProperty(this.globalData, e, {
+          Object.defineProperty(that.globalData, e, {
             set(value) {
-              config.data[e] = value;
+              data[e] = value;
               renderHtml();
-              config.Update && config.Update(getObj(this.globalData));
+              Update && Update(getObj(that.globalData));
             },
             get() {
-              return config.data[e];
+              return data[e];
             },
-            // 是否枚举
             enumerable: !0,
           });
         });
 
         renderHtml();
-        config.Init && config.Init(getObj(this.globalData));
+        Init && Init(getObj(that.globalData));
         return this;
       }
-      //FUNCTION:静态路由
+      //静态路由
       Router(options) {
         let config = {
           // 路由路径集合(类型：数组)
           routes: null,
         };
         config = this.extend(config, options);
-        const that = this;
+        const that = this,
+          { routes } = config;
         templatePolyfill();
 
         // 遍历路由路径
         const eachRoutes = path => {
           return new Promise((success, fail) => {
             if (path) {
-              if (JSON.stringify(config.routes).indexOf(path) < 0) {
-                fail(`[错误 - Router] ${path} 不存在于routes！`);
+              if (JSON.stringify(routes).indexOf(path) < 0) {
+                fail(`[${Alphabet[8]} - Router] ${path} 不存在于routes！`);
               } else {
-                config.routes.forEach(e => {
+                routes.forEach(e => {
                   if (path == e.path) {
                     that
                       .template(path, that.get)
@@ -984,10 +935,10 @@ const icoConfig = require("./src/icoConfig.json");
                           window.onhashchange = () => {
                             that.hashChange(eachRoutes);
                           };
-                        }, 0);
+                        });
                       })
-                      .catch(() => {
-                        e.error && e.error();
+                      .catch(err => {
+                        e.error && e.error(err);
                       });
                   }
                 });
@@ -998,85 +949,23 @@ const icoConfig = require("./src/icoConfig.json");
 
         // 路由导航
         this.navigateTo = path => {
-          eachRoutes(path);
+          if (path.indexOf(`?`) > -1) {
+            setTimeout(() => {
+              location.href = `#${path}`;
+            });
+          } else {
+            eachRoutes(path);
+          }
         };
 
-        if (config.routes) {
-          eachRoutes(config.routes[0].path);
+        if (routes) {
+          eachRoutes(routes[0].path);
         } else {
-          console.error(`[错误 - Router] 不存在任何routes！`);
+          console.error(`[${Alphabet[8]} - Router] 不存在任何routes！`);
         }
         return this;
       }
-      //TODO:文件路由
-      filesRouter(options) {
-        let config = {
-          routes: null,
-        };
-        config = this.extend(config, options);
-        const that = this;
-        let fromParams;
-
-        // 遍历路由路径
-        const eachRoutes = path => {
-          return new Promise((success, fail) => {
-            if (config.routes && path) {
-              if (JSON.stringify(config.routes).indexOf(path) < 0) {
-                fail(`[错误 - filesRouter] ${path} 不存在于routes！`);
-              } else {
-                config.routes.forEach(e => {
-                  if (path == e.path) {
-                    that.ajax({
-                      url: `${path}.tmp`,
-                      success(html) {
-                        that.empty();
-                        that.html(html);
-                        const Nodes = that.get.querySelectorAll("*");
-
-                        Nodes.forEach(e => {
-                          let script = document.createElement("script");
-                          if (e.tagName.toLowerCase() == "script") {
-                            if (e.src) {
-                              script.src = e.src;
-                            } else {
-                              script.innerHTML = e.innerHTML;
-                            }
-                            e.parentElement.removeChild(e);
-                            that.get.appendChild(script);
-                          }
-                        });
-
-                        let query = fromParams || that.getParams();
-                        e.callback && e.callback(query);
-                        success();
-                      },
-                      fail() {
-                        e.error && e.error();
-                      },
-                    });
-                  }
-                });
-              }
-            }
-          });
-        };
-
-        if (config.routes) {
-          let newUrl = window.location.href.replace(window.location.search, "");
-          fromParams = that.getParams();
-          window.history.pushState(null, "", newUrl);
-
-          window.onload = () => {
-            that.hashChange(eachRoutes);
-          };
-          window.onhashchange = () => {
-            that.hashChange(eachRoutes);
-          };
-        }
-
-        return this;
-      }
-      //FUNCTION:轮播切换
+      //轮播切换
       Switcher(options) {
         this.usingTrack("Switcher");
         let config = {
@@ -1107,13 +996,13 @@ const icoConfig = require("./src/icoConfig.json");
           //切换状态变化(类型：方法)
           onChange: null,
         };
-        const that = this;
-        config = that.extend(config, options);
-        const childEle = this.get,
+        config = this.extend(config, options);
+        const { Speed, Curve, Effect, Direction, Inertia, Distance, AutoSpeed, Pagination, Hover, Scroll, InitPage, Loop, onChange } = config,
+          childEle = this.get,
           parentEle = childEle[0].parentElement;
         let childW = childEle[0].offsetWidth,
           childH = childEle[0].offsetHeight,
-          cur = config.InitPage,
+          cur = InitPage,
           AutoTimeout,
           isScrolling = !1;
         const total = childEle.length,
@@ -1127,25 +1016,28 @@ const icoConfig = require("./src/icoConfig.json");
         //切换
         const Swiper = (moveTo = null) => {
           moveTo && (cur = moveTo);
-          Pagination(cur);
-          config.onChange && config.onChange(cur);
-          switch (config.Effect) {
+          Pager(cur);
+          onChange && onChange(cur);
+          switch (Effect) {
             case "fade":
               for (let cur of childEle) cur.style.opacity = 0;
               childEle[cur].style.opacity = 1;
               break;
             default:
-              switch (config.Direction) {
-                case "horizontal":
-                  parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
-                  break;
+              switch (Direction) {
                 case "vertical":
+                  childH = childEle[0].offsetHeight;
                   parentEle.style.transform = `translate3d(0,${-1 * (childH * cur)}px,0)`;
+                  break;
+                case "horizontal":
+                default:
+                  childW = childEle[0].offsetWidth;
+                  parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
                   break;
               }
               break;
           }
-          if (config.Loop) {
+          if (Loop) {
             parentEle.addEventListener("transitionend", transitionend);
           } else {
             if (cur === 0 || cur === total - 1) {
@@ -1157,32 +1049,32 @@ const icoConfig = require("./src/icoConfig.json");
         };
 
         //分页器
-        const Pagination = current => {
-          for (let e of childEle) e.className = e.className.replace("active", "").trim();
+        const Pager = current => {
+          for (let e of childEle) e.className = e.className.replace(Alphabet[0], "").trim();
           if (childEle[cur].className) {
-            childEle[cur].className += " active";
+            childEle[cur].className += ` ${Alphabet[0]}`;
           } else {
-            childEle[cur].className += "active";
+            childEle[cur].className += Alphabet[0];
           }
-          if (config.Pagination) {
-            if (parentEle.parentElement.querySelector(".Pd-pagination")) {
-              parentEle.parentElement.removeChild(parentEle.parentElement.querySelector(".Pd-pagination"));
+          if (Pagination) {
+            if (parentEle.parentElement.querySelector(`.Pd-pagination`)) {
+              parentEle.parentElement.removeChild(parentEle.parentElement.querySelector(`.Pd-pagination`));
             }
-            let pager = document.createElement("div");
+            const pager = document.createElement("div");
             pager.className = "Pd-pagination";
 
             for (let a = 0; a < total; a++) {
-              let pageChild = document.createElement("a"),
-                textNode = childEle[a].getAttribute("data-title") ? document.createTextNode(childEle[a].getAttribute("data-title")) : document.createTextNode(a);
+              const pageChild = document.createElement("a"),
+                textNode = childEle[a].getAttribute(`data-title`) ? document.createTextNode(childEle[a].getAttribute(`data-title`)) : document.createTextNode(a);
               pageChild.setAttribute("href", "javascript:void 0");
-              if (a === current) pageChild.className = "active";
+              if (a === current) pageChild.className = Alphabet[0];
               pageChild.appendChild(textNode);
               pager.appendChild(pageChild);
             }
             parentEle.parentElement.insertBefore(pager, parentEle.nextElementSibling);
-            for (let a = 0; a < parentEle.parentElement.querySelector(".Pd-pagination").querySelectorAll("a").length; a++) {
-              let e = parentEle.parentElement.querySelector(".Pd-pagination").querySelectorAll("a")[a];
-              let idx = a;
+            for (let a = 0; a < parentEle.parentElement.querySelectorAll(`.Pd-pagination a`).length; a++) {
+              const e = parentEle.parentElement.querySelectorAll(`.Pd-pagination a`)[a],
+                idx = a;
               e.onclick = () => {
                 cur = idx;
                 Swiper();
@@ -1195,7 +1087,7 @@ const icoConfig = require("./src/icoConfig.json");
         const Prev = () => {
           if (cur < total && cur > 0) {
             cur--;
-          } else if (cur === 0 && config.Loop) {
+          } else if (cur === 0 && Loop) {
             cur = total - 1;
           } else {
             isScrolling = !1;
@@ -1207,7 +1099,7 @@ const icoConfig = require("./src/icoConfig.json");
         const Next = () => {
           if (cur < total - 1) {
             cur++;
-          } else if (cur === total - 1 && config.Loop) {
+          } else if (cur === total - 1 && Loop) {
             cur = 0;
           } else {
             cur = total - 1;
@@ -1222,19 +1114,19 @@ const icoConfig = require("./src/icoConfig.json");
         let startX, startY, endX, endY, curX, curY;
         //方法：滑动开始
         const touchStart = event => {
-          if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
-          event.preventDefault();
+          if (event.target.getAttribute(`switch-cancel`) || event.target.tagName.toUpperCase() == "A") return !1;
           clearTimeout(AutoTimeout);
           cancelAnimationFrame(AutoPlayFrame);
-          let { pageX, pageY } = event.changedTouches[0];
-          let { left, top } = parentEle.parentElement.getBoundingClientRect();
+          const { pageX, pageY } = event.changedTouches[0];
+          const { left, top } = parentEle.parentElement.getBoundingClientRect();
 
           switch (config.Direction) {
-            case "horizontal":
-              startX = pageX - left;
-              break;
             case "vertical":
               startY = pageY - top;
+              break;
+            case "horizontal":
+            default:
+              startX = pageX - left;
               break;
           }
           parentEle.style.transition = null;
@@ -1242,30 +1134,31 @@ const icoConfig = require("./src/icoConfig.json");
 
         //方法：滑动中
         const touchMove = event => {
-          if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
-          let { pageX, pageY } = event.changedTouches[0];
-          let { left, top } = parentEle.parentElement.getBoundingClientRect();
+          if (event.target.getAttribute(`switch-cancel`) || event.target.tagName.toUpperCase() == "A") return !1;
+          const { pageX, pageY } = event.changedTouches[0],
+            { left, top } = parentEle.parentElement.getBoundingClientRect();
           curX = pageX - left;
           curY = pageY - top;
 
-          switch (config.Effect) {
+          switch (Effect) {
             case "fade":
-              for (let cur of childEle) cur.style.transition = `opacity ${config.Speed}s linear`;
+              for (let cur of childEle) cur.style.transition = `opacity ${Speed}s linear`;
               break;
             default:
-              switch (config.Direction) {
-                case "horizontal":
-                  if (startX > curX) {
-                    parentEle.style.transform = `translate3d(${-1 * (startX - curX + childW * cur)}px,0,0)`;
-                  } else {
-                    parentEle.style.transform = `translate3d(${-1 * (childW * cur) + Math.abs(curX - startX)}px,0,0)`;
-                  }
-                  break;
+              switch (Direction) {
                 case "vertical":
                   if (startY > curY) {
                     if (cur != total - 1) parentEle.style.transform = `translate3d(0,${-1 * (startY - curY + childH * cur)}px,0)`;
                   } else {
                     if (cur != 0) parentEle.style.transform = `translate3d(0,${-1 * (childH * cur) + Math.abs(curY - startY)}px,0)`;
+                  }
+                  break;
+                case "horizontal":
+                default:
+                  if (startX > curX) {
+                    parentEle.style.transform = `translate3d(${-1 * (startX - curX + childW * cur)}px,0,0)`;
+                  } else {
+                    parentEle.style.transform = `translate3d(${-1 * (childW * cur) + Math.abs(curX - startX)}px,0,0)`;
                   }
                   break;
               }
@@ -1275,42 +1168,17 @@ const icoConfig = require("./src/icoConfig.json");
 
         //方法：滑动结束
         const touchEnd = event => {
-          if (event.target.getAttribute("data-cancel") || event.target.tagName.toUpperCase() == "A") return !1;
+          if (event.target.getAttribute(`switch-cancel`) || event.target.tagName.toUpperCase() == "A") return !1;
           clearTimeout(AutoTimeout);
           AutoPlay();
-          parentEle.style.transition = `transform ${config.Speed}s ${config.Curve}`;
-          let { pageX, pageY } = event.changedTouches[0];
-          let { left, top } = parentEle.parentElement.getBoundingClientRect();
+          parentEle.style.transition = `transform ${Speed}s ${Curve}`;
+          const { pageX, pageY } = event.changedTouches[0],
+            { left, top } = parentEle.parentElement.getBoundingClientRect();
 
-          switch (config.Direction) {
-            case "horizontal":
-              endX = pageX - left;
-              switch (config.Effect) {
-                case "fade":
-                  if (startX - endX > childW / config.Distance && cur === total - 1) {
-                    cur = 0;
-                  } else if (startX - endX > childW / config.Distance && cur < total - 1) {
-                    Next();
-                  } else if (endX - startX > childW / config.Distance) {
-                    Prev();
-                  }
-                  for (let cur of childEle) {
-                    cur.style.transition = `opacity ${config.Speed}s ${config.Curve}`;
-                    cur.style.opacity = 0;
-                  }
-                  childEle[cur].style.opacity = 1;
-                  Swiper();
-                  break;
-                default:
-                  if (startX - endX > childW / config.Distance && cur < total - 1) Next();
-                  if (endX - startX > childW / config.Distance) Prev();
-                  parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
-                  break;
-              }
-              break;
+          switch (Direction) {
             case "vertical":
               endY = pageY - top;
-              switch (config.Effect) {
+              switch (Effect) {
                 case "fade":
                   if (startY - endY > childH / config.Distance && cur === total - 1) {
                     cur = 0;
@@ -1333,6 +1201,32 @@ const icoConfig = require("./src/icoConfig.json");
                   break;
               }
               break;
+            case "horizontal":
+            default:
+              endX = pageX - left;
+              switch (Effect) {
+                case "fade":
+                  if (startX - endX > childW / Distance && cur === total - 1) {
+                    cur = 0;
+                  } else if (startX - endX > childW / Distance && cur < total - 1) {
+                    Next();
+                  } else if (endX - startX > childW / Distance) {
+                    Prev();
+                  }
+                  for (let cur of childEle) {
+                    cur.style.transition = `opacity ${Speed}s ${Curve}`;
+                    cur.style.opacity = 0;
+                  }
+                  childEle[cur].style.opacity = 1;
+                  Swiper();
+                  break;
+                default:
+                  if (startX - endX > childW / Distance && cur < total - 1) Next();
+                  if (endX - startX > childW / Distance) Prev();
+                  parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
+                  break;
+              }
+              break;
           }
         };
 
@@ -1352,41 +1246,45 @@ const icoConfig = require("./src/icoConfig.json");
         //自动播放
         let AutoPlayFrame;
         const AutoPlay = () => {
-          if (config.AutoSpeed > 0) {
+          if (AutoSpeed > 0) {
             AutoTimeout = setTimeout(() => {
               Next();
               clearTimeout(AutoTimeout);
               AutoPlayFrame = requestAnimationFrame(AutoPlay);
-            }, config.AutoSpeed * 1000);
+            }, AutoSpeed * 1000);
           }
         };
 
         //初始化
         const Init = () => {
-          let { offsetWidth, offsetHeight } = childEle[0];
-          cur = config.InitPage;
+          const { offsetWidth, offsetHeight } = childEle[0];
+          cur = InitPage;
 
           new Promise(next => {
-            switch (config.Effect) {
+            switch (Effect) {
               case "fade":
                 for (let cur of childEle) {
-                  cur.style.transition = `opacity ${config.Speed}s ${config.Curve}`;
+                  cur.style.transition = `opacity ${Speed}s ${Curve}`;
                   cur.style.position = "absolute";
                 }
                 break;
               default:
-                switch (config.Direction) {
-                  case "horizontal":
-                    parentEle.style.flexDirection = "row";
-                    parentEle.style.width = `${offsetWidth * total}px`;
-                    break;
+                switch (Direction) {
                   case "vertical":
-                    parentEle.style.flexDirection = "column";
+                    parentEle.style.width = `${offsetWidth}px`;
                     parentEle.style.height = `${offsetHeight * total}px`;
+                    parentEle.style.flexDirection = "column";
+                    break;
+                  case "horizontal":
+                  default:
+                    parentEle.style.width = `${offsetWidth * total}px`;
+                    parentEle.style.height = `${offsetHeight}px`;
+                    parentEle.style.flexDirection = "row";
                     break;
                 }
+                parentEle.style.cssText += "touch-action: pan-x;touch-action: pan-y";
                 parentEle.style.display = "flex";
-                parentEle.style.transition = `transform ${config.Speed}s ${config.Curve}`;
+                parentEle.style.transition = `transform ${Speed}s ${Curve}`;
                 break;
             }
             next();
@@ -1394,10 +1292,10 @@ const icoConfig = require("./src/icoConfig.json");
             .then(() => {
               return new Promise(next => {
                 //移除事件
-                Swiper(config.InitPage);
+                Swiper(InitPage);
                 AutoPlay();
-                config.Inertia && parentEle.removeEventListener("touchmove", touchMove);
-                config.Scroll && parentEle.removeEventListener("mousewheel", scrollMove);
+                Inertia && parentEle.removeEventListener("touchmove", touchMove);
+                Scroll && parentEle.removeEventListener("mousewheel", scrollMove);
                 parentEle.removeEventListener("touchstart", touchStart);
                 parentEle.removeEventListener("touchend", touchEnd);
                 next();
@@ -1405,11 +1303,11 @@ const icoConfig = require("./src/icoConfig.json");
             })
             .then(() => {
               //添加事件
-              config.Inertia && parentEle.addEventListener("touchmove", touchMove);
-              config.Scroll && parentEle.addEventListener("mousewheel", scrollMove);
+              Inertia && parentEle.addEventListener("touchmove", touchMove);
+              Scroll && parentEle.addEventListener("mousewheel", scrollMove);
               parentEle.addEventListener("touchstart", touchStart);
               parentEle.addEventListener("touchend", touchEnd);
-              if (config.Hover) {
+              if (Hover) {
                 parentEle.addEventListener("mouseover", () => {
                   clearTimeout(AutoTimeout);
                   cancelAnimationFrame(AutoPlayFrame);
@@ -1422,12 +1320,12 @@ const icoConfig = require("./src/icoConfig.json");
         Init();
         let req;
         window.addEventListener("resize", () => {
-          cancelAnimationFrame(req);
-          req = requestAnimationFrame(Init);
+          clearTimeout(req);
+          req = setTimeout(Init, 200);
         });
         return this;
       }
-      //FUNCTION:字体自适应
+      //字体自适应
       AutoSize(options) {
         let config = {
           //固定尺寸(类型：字符串)
@@ -1442,41 +1340,39 @@ const icoConfig = require("./src/icoConfig.json");
           Ratio: 1,
         };
         config = this.extend(config, options);
-        const meta = document.createElement("meta");
+        const meta = document.createElement(`meta`),
+          { PageSize, InitScale, MinScale, MaxScale, Ratio } = config;
         meta.setAttribute("name", "viewport");
-        if (typeof config.PageSize !== "number") {
-          meta.setAttribute(
-            "content",
-            `width=${config.PageSize},initial-scale=${config.InitScale},minimum-scale=${config.MinScale},maximum-scale=${config.MaxScale},user-scalable=no,viewport-fit=cover`
-          );
+        if (typeof PageSize !== "number") {
+          meta.setAttribute("content", `width=${PageSize},initial-scale=${InitScale},minimum-scale=${MinScale},maximum-scale=${MaxScale},user-scalable=no,viewport-fit=cover`);
         } else {
-          meta.setAttribute("content", `width=${config.PageSize},user-scalable=no,viewport-fit=cover`);
+          meta.setAttribute("content", `width=${PageSize},user-scalable=no,viewport-fit=cover`);
         }
-        new PandoraAPI("head").get.appendChild(meta);
+        new PandoraAPI(`head`).get.appendChild(meta);
 
         const SetSize = () => {
-          let platform = navigator.userAgent.toLowerCase(),
-            deviceList = ["iphone", "android"],
-            isMobile = !1;
+          const platform = navigator.userAgent.toLowerCase(),
+            deviceList = ["iphone", "android"];
+          let isMobile = !1;
 
           deviceList.forEach(c => {
             if (isMobile) return !1;
-            if (platform.indexOf(c) > 0 && config.PageSize !== "device-width") {
+            if (platform.indexOf(c) > 0 && PageSize !== "device-width") {
               isMobile = !0;
-              let calcFontSize = (window.screen.width / 3.75) * config.Ratio;
-              this.css({ "font-size": `${calcFontSize}px` });
+              this.css({ "font-size": `${(window.screen.width / 3.75) * Ratio}px` });
             } else {
               isMobile = !1;
-              this.css({ "font-size": this.css("font-size") });
+              this.css({ "font-size": this.css(`font-size`) });
             }
             this.attr("isMobile", isMobile);
           });
         };
+
         SetSize();
         window.onresize = SetSize;
         return this;
       }
-      //FUNCTION:自定义弹框
+      //自定义弹框
       Dialog(options) {
         this.usingTrack("Dialog");
         let config = {
@@ -1512,97 +1408,105 @@ const icoConfig = require("./src/icoConfig.json");
           },
         };
         config = this.extend(config, options);
-        let mask = document.createElement("div"),
-          parent = this.get.parentElement;
-        mask.className = "Pd-Mask";
-        const confirmBtn = config.Confirm.btn ? new PandoraAPI(config.Confirm.btn) : null,
-          cancelBtn = config.Cancel.btn ? new PandoraAPI(config.Cancel.btn) : null;
+        const masker = document.createElement(`div`),
+          parent = this.get.parentElement,
+          { mask, maskColor, maskOut, Speed, Curve, Direction, In, Out, Confirm, Cancel } = config;
+        masker.className = "Pd-Mask";
+        const confirmBtn = Confirm.btn ? new PandoraAPI(Confirm.btn) : null,
+          cancelBtn = Cancel.btn ? new PandoraAPI(Cancel.btn) : null;
 
-        if (config.Direction !== "none") this.css({ transition: `all ${config.Speed}ms ${config.Curve}` });
+        if (Direction !== "none") this.css({ transition: `all ${Speed}ms ${Curve}` });
 
         //关闭弹框
         const closeDialog = () => {
-          Effect("out");
-          if (config.Direction === "none") {
-            config.mask && parent.removeChild(mask);
-            this.css({ display: "none" });
-          } else {
-            this.bind("transitionend", () => {
-              config.mask && parent.removeChild(mask);
+          return new Promise(next => {
+            Effect(`out`);
+            if (Direction === "none") {
+              mask && parent.removeChild(masker);
               this.css({ display: "none" });
-              this.unbind("transitionend");
-            });
-          }
-          config.Confirm.btn && confirmBtn.unbind("click");
-          config.Cancel.btn && cancelBtn.unbind("click");
-          window.onresize = null;
+              next();
+            } else {
+              this.bind("transitionend", () => {
+                mask && parent.removeChild(masker);
+                this.css({ display: "none" });
+                this.unbind("transitionend");
+                next();
+              });
+            }
+            Confirm.btn && confirmBtn.unbind(`click`);
+            Cancel.btn && cancelBtn.unbind(`click`);
+            window.onresize = null;
+          });
         };
 
         //进入和退出效果
         const Effect = where => {
-          if (config.mask) {
-            parent.insertBefore(mask, this.get.nextElementSibling);
-            new PandoraAPI(".Pd-Mask").css({ width: "100vw", height: "100vh", background: config.maskColor, position: "fixed", top: 0, left: 0, "z-index": 998 });
+          if (mask) {
+            parent.insertBefore(masker, this.get.nextElementSibling);
+            new PandoraAPI(`.Pd-Mask`).css({ width: "100vw", height: "100vh", background: maskColor, position: "fixed", top: 0, left: 0, "z-index": 998 });
           }
 
           switch (where) {
             case "in":
               this.css({ display: "block" });
-              switch (config.Direction) {
-                case "zoom":
-                  this.css({ transform: "translate3d(0,0,0) scale(0)" });
-                  break;
+              switch (Direction) {
                 case "top":
                   this.css({ transform: "translate3d(0,-100%,0)" });
                   break;
                 case "bottom":
                   this.css({ transform: "translate3d(0,100%,0)" });
                   break;
+                case "zoom":
+                default:
+                  this.css({ transform: "translate3d(0,0,0) scale(0)" });
+                  break;
               }
-              config.In && config.In();
+              In && In();
               break;
             case "out":
-              switch (config.Direction) {
+              switch (Direction) {
                 case "none":
                   this.css({ display: "none" });
                   break;
-                case "zoom":
-                  this.css({ transform: "translate3d(0,0,0) scale(0)" });
-                  break;
                 case "top":
                   this.css({ transform: "translate3d(0,-100%,0)" });
                   break;
                 case "bottom":
                   this.css({ transform: "translate3d(0,100%,0)" });
                   break;
+                case "zoom":
+                default:
+                  this.css({ transform: "translate3d(0,0,0) scale(0)" });
+                  break;
               }
-              config.Out && config.Out();
+              Out && Out();
               break;
           }
         };
 
         const openDialog = param => {
           new Promise(next => {
-            Effect("in");
+            Effect(`in`);
             next();
           })
             .then(() => {
               return new Promise(next => {
                 const calcDialog = () => {
-                  let top = parseInt(this.css("height")) / 2,
-                    left = parseInt(this.css("width")) / 2;
-                  switch (config.Direction) {
+                  const top = parseInt(this.css(`height`)) / 2,
+                    left = parseInt(this.css(`width`)) / 2;
+                  switch (Direction) {
                     case "none":
-                      this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
-                      break;
-                    case "zoom":
-                      this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                      this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999 });
                       break;
                     case "top":
                       this.css({ position: "fixed", top: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
                       break;
                     case "bottom":
                       this.css({ position: "fixed", bottom: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                      break;
+                    case "zoom":
+                    default:
+                      this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
                       break;
                   }
                 };
@@ -1615,17 +1519,17 @@ const icoConfig = require("./src/icoConfig.json");
             })
             .then(() => {
               //遮罩被点击
-              if (config.mask && config.maskOut) mask.onclick = closeDialog;
+              if (mask && maskOut) masker.onclick = closeDialog;
               const { close } = this;
               //确认按钮被点击
-              config.Confirm.btn &&
+              Confirm.btn &&
                 confirmBtn.bind("click", () => {
-                  config.Confirm.callback({ param: param || null, close });
+                  Confirm.callback({ param: param || null, close });
                 });
               //取消按钮被点击
-              config.Cancel.btn &&
+              Cancel.btn &&
                 cancelBtn.bind("click", () => {
-                  config.Cancel.callback({ param: param || null, close });
+                  Cancel.callback({ param: param || null, close });
                 });
             });
         };
@@ -1634,7 +1538,7 @@ const icoConfig = require("./src/icoConfig.json");
         this.open = openDialog;
         return this;
       }
-      //FUNCTION:图片预加载
+      //图片预加载
       ImgLoader(options) {
         this.usingTrack("ImgLoader");
         let config = {
@@ -1646,14 +1550,15 @@ const icoConfig = require("./src/icoConfig.json");
           callback: null,
           //加载错误(类型：方法)
           error() {
-            console.error("[错误 - ImgLoader] 图片资源加载错误");
+            console.error(`[${Alphabet[8]} - ImgLoader] 图片资源加载错误`);
             alert("图片资源加载错误");
           },
         };
         config = this.extend(config, options);
         const pattern = new RegExp('".*?"', "g"),
           pattern2 = new RegExp(/'.*?'/, "g"),
-          pattern3 = new RegExp(/\(.*?\)/, "g");
+          pattern3 = new RegExp(/\(.*?\)/, "g"),
+          { lazy, loading, callback, error } = config;
         let ImgArr = [],
           total = 0,
           cur = 0,
@@ -1662,8 +1567,8 @@ const icoConfig = require("./src/icoConfig.json");
 
         for (let e of this.getEle("*")) {
           if (e.nodeName.toLowerCase() == "img") e.src && ImgArr.push(e.src);
-          const getBg = window.getComputedStyle(e).getPropertyValue("background-image");
-          if (getBg.indexOf("url") > -1 && getBg != "none" && getBg.indexOf("data:") < 0) {
+          const getBg = window.getComputedStyle(e).getPropertyValue(`background-image`);
+          if (getBg.indexOf(`url`) > -1 && getBg != "none" && getBg.indexOf(`data:`) < 0 && getBg.indexOf(`blob:`) < 0) {
             const url1 = getBg.match(pattern),
               url2 = getBg.match(pattern2),
               url3 = getBg.match(pattern3);
@@ -1671,22 +1576,19 @@ const icoConfig = require("./src/icoConfig.json");
             if (url1) ImgArr.push(url1[0].toString().replace(/"/g, ""));
             if (url2) ImgArr.push(url2[0].toString().replace(/'/g, ""));
             if (url3) {
-              let src = url3[0].toString().replace(/\(/, "");
-              src = src.replace(/\)/, "");
+              let src = url3[0].toString().replace(/\(/, "").replace(/\)/, "");
               if (src.match(pattern)) src = src.match(pattern)[0].toString().replace(/"/g, "");
               if (src.match(pattern2)) src = src.match(pattern2)[0].toString().replace(/'/g, "");
               ImgArr.push(src);
             }
           }
         }
-
         total = ImgArr.length;
 
         const loader = src => {
           return new Promise((success, fail) => {
-            let img = new Image();
+            const img = new Image();
             img.src = src;
-
             img.onerror = fail;
 
             if (img.complete) {
@@ -1703,24 +1605,23 @@ const icoConfig = require("./src/icoConfig.json");
 
         //加载中
         let loadStepFrame;
-
         Promise.all(ImgArr.map(e => loader(e))).catch(() => {
           cancelAnimationFrame(loadStepFrame);
-          config.error();
+          error();
         });
 
         const loadStep = () => {
           step = (cur / total) * 100;
           if (floatNum < 100) {
-            if (floatNum < step) config.lazy ? floatNum++ : (floatNum = step);
+            if (floatNum < step) lazy ? floatNum++ : (floatNum = step);
             this.attr("Pd-load", floatNum);
-            config.loading && config.loading(floatNum);
+            loading && loading(floatNum);
             if (floatNum === 100) {
               cancelAnimationFrame(loadStepFrame);
-              if (config.lazy) {
-                config.callback && config.callback();
+              if (lazy) {
+                callback && callback();
               } else {
-                setTimeout(config.callback, 100);
+                setTimeout(callback);
               }
             } else {
               loadStepFrame = requestAnimationFrame(loadStep);
@@ -1730,13 +1631,11 @@ const icoConfig = require("./src/icoConfig.json");
         loadStep();
         return this;
       }
-      //FUNCTION:图片上传
+      //图片上传
       ImgUpload(options) {
         let config = {
           //接口地址(类型：字符串)
-          apiUrl: "https://api.pandorajs.com/",
-          //接口名称(类型：字符串)
-          apiName: "Pd_uploadImage",
+          apiUrl: `https://api.${Alphabet[3]}/Pd_uploadImage`,
           //格式限制(类型：字符串)
           Format: "*",
           //选择类型(可选参数：default、camera)
@@ -1760,40 +1659,45 @@ const icoConfig = require("./src/icoConfig.json");
             overMax: null,
             //开始上传(类型：方法)
             ready: null,
+            //上传中(类型：方法；返回类型：数字)
+            progress: null,
             //上传成功(类型：方法；返回类型：对象)
             success: null,
             //失败(类型：方法)
             fail() {
-              console.error("[错误 - ImgUpload] 图片上传失败！");
+              console.error(`[${Alphabet[8]} - ImgUpload] 图片上传失败！`);
             },
           },
           //唯一id(类型：字符串；如果为null，则启用临时上传，请谨慎使用)
           Uid: null,
         };
         config = this.extend(config, options);
-        const that = this;
-        const innerHtml = this.html();
+        const that = this,
+          innerHtml = this.html(),
+          { apiUrl, Format, type, Max, Quality, Clip, alwaysCover, Events, Uid } = config;
         this.empty();
         this.get.insertAdjacentHTML("afterbegin", `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`);
-        let uploadBtn = document.createElement("input"),
+
+        let uploadBtn = document.createElement(`input`),
           userId,
-          total = config.Max,
+          total = Max,
           current = 0,
           steps = (current / total) * 100;
 
-        if (config.Uid) {
-          userId = config.Uid;
+        if (Uid) {
+          userId = Uid;
         } else {
           userId = `${document.domain}_${this.pid}`;
         }
 
         uploadBtn.type = "file";
-        uploadBtn.accept = `image/${config.Format}`;
+        uploadBtn.accept = `image/${Format}`;
         uploadBtn.id = `Pd_imgUpload_${this.pid}`;
-        if (config.type === "camera") uploadBtn.setAttribute("capture", "camera");
+        uploadBtn.setAttribute("capture", type);
         uploadBtn.style.display = "none";
-        if (config.Max > 1) uploadBtn.multiple = !0;
-        const label = this.get.querySelector("label");
+
+        if (Max > 1) uploadBtn.multiple = !0;
+        const label = this.get.querySelector(`label`);
         label.innerHTML = innerHtml;
         label.append(uploadBtn);
 
@@ -1801,56 +1705,59 @@ const icoConfig = require("./src/icoConfig.json");
         const uploadPreview = obj => {
           const formData = new FormData();
           let waitUploadFile = obj;
-          if (config.alwaysCover) waitUploadFile = new File([obj], `cover.${obj.name.split(".")[1]}`, { type: obj.type });
+          if (alwaysCover) waitUploadFile = new File([obj], `cover.${obj.name.split(".")[1]}`, { type: obj.type });
           formData.append("images", waitUploadFile);
           formData.append("uid", userId);
-          formData.append("width", config.Clip.width);
-          formData.append("height", config.Clip.height);
-          formData.append("quality", config.Quality);
+          formData.append("width", Clip.width);
+          formData.append("height", Clip.height);
+          formData.append("quality", Quality);
 
-          if (config.Events.ready) {
-            config.Events.ready();
+          if (Events.ready) {
+            Events.ready();
           } else {
-            !config.Events.ready && window.showLoading();
+            !Events.ready && window.showLoading();
           }
 
           this.ajax({
-            url: `${config.apiUrl}${config.apiName}`,
+            url: `${apiUrl}`,
             async: !0,
             type: "post",
             dataType: "form",
+            headers: null,
             data: formData,
+            progress: Events.progress,
             success(res) {
-              that.usingTrack("ImgUpload");
+              that.usingTrack(`ImgUpload`);
               if (res) {
                 current++;
                 steps = (current / total) * 100;
                 uploadBtn.setAttribute("data-progress", steps);
                 if (steps === 100) {
+                  const data = { src: res.images };
+
                   uploadBtn.disabled = !1;
-                  let data = { src: res.images };
                   uploadBtn.value = "";
-                  !config.Events.ready && window.hideLoading();
-                  config.Events.success && config.Events.success(data);
+                  !Events.ready && window.hideLoading();
+                  Events.success && Events.success(data);
                 }
               } else {
                 alert("发生错误！");
-                console.error("[错误 - ImgUpload] 服务端数据返回有误！");
+                console.error(`[${Alphabet[8]} - ImgUpload] 服务端错误！`);
               }
             },
             error() {
               uploadBtn.disabled = !1;
               uploadBtn.value = "";
-              !config.Events.ready && window.hideLoading();
-              config.Events.fail && config.Events.fail();
+              !Events.ready && window.hideLoading();
+              Events.fail && Events.fail();
             },
           });
         };
 
         //获取选择文件
         const selectedFile = Files => {
-          let files = Array.prototype.slice.call(Files);
-          if (config.Max === 0 || files.length <= config.Max) {
+          const files = Array.prototype.slice.call(Files);
+          if (Max === 0 || files.length <= Max) {
             current = 0;
             uploadBtn.disabled = !0;
             total = files.length;
@@ -1861,8 +1768,8 @@ const icoConfig = require("./src/icoConfig.json");
               });
             }
           } else {
-            config.Events.overMax && config.Events.overMax();
-            console.info(`[提示 - ImgUpload] 文件数量超过最大数量:${config.Max}`);
+            Events.overMax && Events.overMax();
+            console.info(`[${Alphabet[7]} - ImgUpload] 文件数量超过最大数量:${Max}`);
           }
         };
 
@@ -1881,7 +1788,7 @@ const icoConfig = require("./src/icoConfig.json");
         });
         return this;
       }
-      //FUNCTION:图片移动缩放
+      //图片移动缩放
       ImgTransit(options) {
         this.usingTrack("ImgTransit");
         let config = {
@@ -1925,22 +1832,20 @@ const icoConfig = require("./src/icoConfig.json");
           callback: null,
         };
         config = this.extend(config, options);
-        let imgRealArr = this.get.querySelectorAll("img"),
-          beforeImgArr = Array.prototype.slice.call(imgRealArr),
+        let that = this.get,
           imgArr = [],
           imgIndex = [],
           btnAnimation = "transition:opacity .2s ease-in",
           topIndex,
           canMove = !0;
 
-        this.css({ position: "relative" });
+        this.parent().css({ position: "relative", "touch-action": "pan" });
 
-        beforeImgArr.forEach((cur, idx) => {
-          if (JSON.parse(cur.getAttribute("Pd-move"))) {
-            imgIndex.push(idx);
-            imgArr.push(cur);
-          }
-        });
+        if (JSON.parse(that.getAttribute(`Pd-move`))) {
+          imgIndex.push(Number(that.getAttribute(`alt`)));
+          imgArr.push(that);
+        }
+
         topIndex = imgArr.length;
 
         //图标配置
@@ -1949,9 +1854,9 @@ const icoConfig = require("./src/icoConfig.json");
           positionConfig = this.extend(positionConfig, option);
           return `<a class="Pd-ImgTransit-btn Pd-${positionConfig.name}" style="width:${config.iconSize}px;height:${config.iconSize}px;background:#fff url('${
             icoConfig[positionConfig.name]
-          }');background-position:center;background-repeat:no-repeat;background-size:65%;position:absolute;border-radius:50%;top:${positionConfig.top}px;left:${positionConfig.left}px;right:${
-            positionConfig.right
-          }px;bottom:${positionConfig.bottom}px;z-index:2;${btnAnimation}" href="javascript:void 0"></a>`;
+          }');background-position:center;background-repeat:no-repeat;background-size:65%;position:absolute;border-radius:50%;top:${positionConfig.top}px;left:${positionConfig.left}px;right:${positionConfig.right}px;bottom:${
+            positionConfig.bottom
+          }px;z-index:2;${btnAnimation}" href="javascript:void 0"></a>`;
         };
 
         const icon = {
@@ -1962,35 +1867,38 @@ const icoConfig = require("./src/icoConfig.json");
 
         //删除原始元素
         const deleteDefault = () => {
-          let imgRealArr = this.get.querySelectorAll("img"),
+          const imgRealArr = this.get.querySelectorAll(`img`),
             imgArr = Array.prototype.slice.call(imgRealArr);
           imgArr.forEach((cur, idx) => {
             let current = imgRealArr[idx];
-            JSON.parse(current.getAttribute("Pd-move")) && current.parentElement.removeChild(current);
+            JSON.parse(current.getAttribute(`Pd-move`)) && current.parentElement.removeChild(current);
           });
         };
 
         //设置参数
         const setConfig = (ele, eleConfig) => {
-          for (let a of ele.querySelectorAll(".Pd-ImgTransit-btn")) a.style.transform = `scale(${1 / (eleConfig.scale / 100)}) rotate(${-1 * eleConfig.rotate}deg)`;
+          for (let a of ele.querySelectorAll(`.Pd-ImgTransit-btn`)) a.style.transform = `scale(${1 / (eleConfig.scale / 100)}) rotate(${-1 * eleConfig.rotate}deg)`;
           return (ele.style.transform = `translate3d(${eleConfig.translate}) scale(${eleConfig.scale / 100}) rotate(${eleConfig.rotate}deg)`);
         };
 
         //获取中心
         const getCenterPoint = ele => {
-          return { x: ele.getBoundingClientRect().left + ele.offsetWidth / 2, y: ele.getBoundingClientRect().top + ele.offsetHeight / 2 };
+          return {
+            x: ele.getBoundingClientRect().left + ele.offsetWidth / 2,
+            y: ele.getBoundingClientRect().top + ele.offsetHeight / 2,
+          };
         };
 
         // 获取两点距离
         const getDistance = (p1, p2) => {
-          let x = p2.pageX - p1.pageX,
+          const x = p2.pageX - p1.pageX,
             y = p2.pageY - p1.pageY;
           return Math.sqrt(x * x + y * y);
         };
 
         // 获取两点角度
         const getAngle = (p1, p2) => {
-          let x = p1.pageX - p2.pageX,
+          const x = p1.pageX - p2.pageX,
             y = p1.pageY - p2.pageY;
           return (Math.atan2(y, x) * 180) / Math.PI;
         };
@@ -2041,221 +1949,211 @@ const icoConfig = require("./src/icoConfig.json");
         };
 
         //添加容器事件
+        let touchStart,
+          touchEnd,
+          touchMove,
+          touchResize,
+          touchRotate,
+          touchDelete,
+          centerPoint,
+          prevAngle,
+          touchX = 0,
+          touchY = 0,
+          startX = 0,
+          startY = 0,
+          prevScale = 100;
+
         const addEvent = ele => {
-          let eleReal = this.get.querySelectorAll(`.Pd-ImgTransit`),
-            eleArr = Array.prototype.slice.call(eleReal),
-            eleConfig = [];
+          let eleReal = ele[0].parentElement,
+            eleConfig = { translate: `0,0,0`, scale: 100, rotate: 0 },
+            w = ele[0].offsetWidth,
+            h = ele[0].offsetHeight;
 
-          eleArr.forEach((cur, idx) => {
-            let w = ele[idx].width,
-              h = ele[idx].height;
-            eleConfig.push({ translate: `0,0,0`, scale: 100, rotate: 0 });
-            eleReal[idx].style.width = `${w}px`;
-            eleReal[idx].style.height = `${h}px`;
-            setConfig(eleReal[idx], eleConfig[idx]);
-            eleReal[idx].style.position = "absolute";
-            eleReal[idx].style.top = "50%";
-            eleReal[idx].style.left = "50%";
-            eleReal[idx].style.margin = `-${h / 2 + config.padding}px 0 0 -${w / 2 + config.padding}px`;
-            eleReal[idx].style.zIndex = idx + 1;
-            eleReal[idx].style.padding = `${config.padding}px`;
+          eleReal.style.width = `${w}px`;
+          eleReal.style.height = `${h}px`;
+          setConfig(eleReal, eleConfig);
+          eleReal.style.position = "absolute";
+          eleReal.style.top = eleReal.style.left = "50%";
+          eleReal.style.margin = `-${h / 2 + config.padding}px 0 0 -${w / 2 + config.padding}px`;
+          eleReal.style.zIndex += 1;
+          eleReal.style.padding = `${config.padding}px`;
 
-            let touchStart,
-              touchEnd,
-              touchMove,
-              touchResize,
-              touchRotate,
-              touchDelete,
-              centerPoint,
-              prevAngle,
-              touchX = 0,
-              touchY = 0,
-              startX,
-              startY,
-              prevScale = 100;
+          touchStart = event => {
+            if (JSON.parse(event.target.parentElement.getAttribute(`pd-move`)) && event.target.className.indexOf(`Pd-ImgTransit-btn`)) event.target.style.transform = "scale(1.04)";
+            config.callback && config.callback({ type: "choose", obj: event.target });
+          };
+          touchEnd = event => {
+            if (event.target.className.indexOf(`Pd-ImgTransit-btn`)) event.target.style.transform = "scale(1)";
+          };
+          //移动事件
+          touchMove = event => {
+            if (event.touches.length < 2) {
+              const changePosition = () => {
+                let nowX = event.changedTouches[0].pageX,
+                  nowY = event.changedTouches[0].pageY,
+                  w = event.target.getBoundingClientRect().width,
+                  h = event.target.getBoundingClientRect().height,
+                  icon = event.target.parentElement.querySelectorAll(`.Pd-ImgTransit-btn`)[0].getBoundingClientRect(),
+                  iconW = icon.width / 2;
 
-            touchStart = event => {
-              event.preventDefault();
-              if (JSON.parse(event.target.getAttribute("pd-move")) || JSON.parse(event.target.parentElement.getAttribute("pd-move"))) eleReal[idx].querySelector("img").style.transform = "scale(1.04)";
-              config.callback &&
-                config.callback({
-                  type: "choose",
-                  obj: eleReal[idx],
-                });
+                touchX = nowX - startX;
+                touchY = nowY - startY;
+                let getBounding = event.target.parentElement.parentElement.getBoundingClientRect(),
+                  parentBox = {
+                    width: config.bounds ? getBounding.width + config.outBounds : getBounding.width,
+                    height: config.bounds ? getBounding.height + config.outBounds : getBounding.height,
+                  };
+                if (config.bounds) {
+                  if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconW) {
+                    if (touchX < 0) {
+                      touchX = -1 * (parentBox.width / 2 - w / 2 - iconW);
+                    } else {
+                      touchX = parentBox.width / 2 - w / 2 - iconW;
+                    }
+                  }
+                  if (Math.abs(touchY) >= parentBox.height / 2 - h / 2 - iconW) {
+                    if (touchY < 0) {
+                      touchY = -1 * (parentBox.height / 2 - h / 2 - iconW);
+                    } else {
+                      touchY = parentBox.height / 2 - h / 2 - iconW;
+                    }
+                  }
+                }
+                eleConfig.translate = `${touchX}px,${touchY}px,0`;
+                setConfig(eleReal, eleConfig);
+              };
+              config.callback && config.callback({ type: "move", obj: eleReal });
+              canMove && changePosition();
+            }
+          };
+          //缩放事件
+          touchResize = event => {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            if (canMove) {
+              const x = event.changedTouches[0].pageX - eleReal.getBoundingClientRect().left;
+              if (x > 0 && eleConfig.scale > config.scale.min) eleConfig.scale -= config.scale.rate;
+              if (x < 0 && eleConfig.scale < config.scale.max) eleConfig.scale += config.scale.rate;
+            }
+
+            if (event.touches.length >= 2) {
+              if (config.scale.enable) {
+                prevScale = event.scale * 100;
+                eleConfig.scale = prevScale;
+              }
+
+              if (config.rotate.enable) eleConfig.rotate = event.rotation;
+            }
+            setConfig(eleReal, eleConfig);
+            config.callback && config.callback({ type: "resize", obj: eleReal });
+          };
+          //旋转事件
+          touchRotate = event => {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            const changeRotate = () => {
+              const angle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x);
+              eleConfig.rotate = Math.floor(((angle - prevAngle) * 180) / Math.PI) * config.rotate.rate;
+              setConfig(eleReal, eleConfig);
             };
-            touchEnd = event => {
-              event.preventDefault();
-              eleReal[idx].querySelector("img").style.transform = "scale(1)";
+            config.callback && config.callback({ type: "rotate", obj: eleReal });
+            canMove && changeRotate();
+          };
+          //删除事件
+          touchDelete = event => {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            const deleteObj = () => {
+              eleConfig.translate = "0,0,0";
+              eleConfig.rotate = 0;
+              eleConfig.scale = 100;
+              setConfig(eleReal, eleConfig);
+              eleReal.style.display = "none";
+              config.callback && config.callback({ type: "delete", obj: eleReal });
             };
-            //移动事件
-            touchMove = event => {
+            canMove && deleteObj();
+          };
+          //绑定所有操作
+          eleReal.addEventListener("touchstart", touchStart);
+          eleReal.addEventListener("touchend", touchEnd);
+          if (config.move) {
+            eleReal.addEventListener("touchstart", event => {
               if (event.touches.length < 2) {
-                event.stopImmediatePropagation();
-                event.preventDefault();
-                const changePosition = () => {
-                  let nowX = event.changedTouches[0].pageX,
-                    nowY = event.changedTouches[0].pageY,
-                    w = event.target.getBoundingClientRect().width,
-                    h = event.target.getBoundingClientRect().height,
-                    icon = event.target.parentElement.querySelectorAll(".Pd-ImgTransit-btn")[0].getBoundingClientRect(),
-                    iconW = icon.width / 2;
-                  touchX = nowX - startX;
-                  touchY = nowY - startY;
-                  let getBounding = eleReal[idx].parentElement.getBoundingClientRect(),
-                    parentBox = { width: config.bounds ? getBounding.width + config.outBounds : getBounding.width, height: config.bounds ? getBounding.height + config.outBounds : getBounding.height };
-
-                  if (config.bounds) {
-                    if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconW) {
-                      if (touchX < 0) {
-                        touchX = -1 * (parentBox.width / 2 - w / 2 - iconW);
-                      } else {
-                        touchX = parentBox.width / 2 - w / 2 - iconW;
-                      }
-                    }
-                    if (Math.abs(touchY) >= parentBox.height / 2 - h / 2 - iconW) {
-                      if (touchY < 0) {
-                        touchY = -1 * (parentBox.height / 2 - h / 2 - iconW);
-                      } else {
-                        touchY = parentBox.height / 2 - h / 2 - iconW;
-                      }
-                    }
-                  }
-                  eleConfig[idx].translate = `${touchX}px,${touchY}px,0`;
-                  setConfig(eleReal[idx], eleConfig[idx]);
-                };
-                config.callback && config.callback({ type: "move", obj: eleReal[idx] });
-                canMove && changePosition();
-              }
-            };
-            //缩放事件
-            touchResize = event => {
-              event.stopImmediatePropagation();
-              event.preventDefault();
-              if (canMove) {
-                let x = event.changedTouches[0].pageX - eleReal[idx].getBoundingClientRect().left;
-                if (x > 0 && eleConfig[idx].scale > config.scale.min) eleConfig[idx].scale -= config.scale.rate;
-                if (x < 0 && eleConfig[idx].scale < config.scale.max) eleConfig[idx].scale += config.scale.rate;
-              }
-
-              if (event.touches.length >= 2) {
-                if (config.scale.enable) {
-                  prevScale = event.scale * 100;
-                  eleConfig[idx].scale = prevScale;
-                }
-
-                if (config.rotate.enable) eleConfig[idx].rotate = event.rotation;
-              }
-              setConfig(eleReal[idx], eleConfig[idx]);
-              config.callback && config.callback({ type: "resize", obj: eleReal[idx] });
-            };
-            //旋转事件
-            touchRotate = event => {
-              event.stopImmediatePropagation();
-              event.preventDefault();
-              const changeRotate = () => {
-                let angle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x);
-                eleConfig[idx].rotate = Math.floor(((angle - prevAngle) * 180) / Math.PI) * config.rotate.rate;
-                setConfig(eleReal[idx], eleConfig[idx]);
-              };
-              config.callback && config.callback({ type: "rotate", obj: eleReal[idx] });
-              canMove && changeRotate();
-            };
-            //删除事件
-            touchDelete = event => {
-              event.stopImmediatePropagation();
-              event.preventDefault();
-              const deleteObj = () => {
-                eleConfig[idx].translate = "0,0,0";
-                eleConfig[idx].rotate = 0;
-                eleConfig[idx].scale = 100;
-                setConfig(eleReal[idx], eleConfig[idx]);
-                eleReal[idx].style.display = "none";
-                config.callback && config.callback({ type: "delete", obj: eleReal[idx] });
-              };
-              canMove && deleteObj();
-            };
-            //绑定所有操作
-            eleReal[idx].addEventListener("touchstart", touchStart);
-            eleReal[idx].addEventListener("touchend", touchEnd);
-            if (config.move) {
-              eleReal[idx].addEventListener("touchstart", event => {
-                if (event.touches.length < 2) {
-                  startX = event.changedTouches[0].pageX - touchX;
-                  startY = event.changedTouches[0].pageY - touchY;
-                  eleReal[idx].addEventListener("touchmove", touchMove);
-                }
-              });
-            }
-            if (config.scale.enable && config.rotate.enable && config.Gesture) {
-              setGesture(eleReal[idx]).gesturemove = e => {
-                touchResize(e);
-                touchRotate(e);
-              };
-            }
-            if (config.icon && config.scale.enable) eleReal[idx].querySelectorAll(`.Pd-resize`)[0].addEventListener("touchmove", touchResize);
-            if (config.icon && config.rotate.enable) {
-              eleReal[idx].querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchstart", event => {
-                centerPoint = getCenterPoint(eleReal[idx]);
-                prevAngle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x) - (eleConfig[idx].rotate * Math.PI) / 180;
-              });
-              eleReal[idx].querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchmove", touchRotate);
-            }
-            if (config.icon && config.delete) eleReal[idx].querySelectorAll(`.Pd-delete`)[0].addEventListener("touchstart", touchDelete);
-
-            //隐藏操作按钮
-            const hideBtn = () => {
-              canMove = !1;
-              let allCon = document.querySelectorAll(".Pd-ImgTransit"),
-                allBtn = document.querySelectorAll(".Pd-ImgTransit-btn");
-              for (let a of allCon) a.style.border = "none";
-              for (let a of allBtn) a.style.opacity = 0;
-            };
-            config.icon && hideBtn();
-
-            //显示操作按钮
-            const showBtn = tag => {
-              canMove = !0;
-              let curBtn = tag.querySelectorAll(".Pd-ImgTransit-btn");
-              for (let a of curBtn) {
-                a.style.opacity = 1;
-                if (config.border) tag.style.border = "2px dashed white";
-                topIndex++;
-                tag.style.zIndex = topIndex;
-              }
-            };
-
-            //显示当前按钮
-            document.addEventListener("touchstart", event => {
-              if (config.icon) {
-                hideBtn();
-                event.stopImmediatePropagation();
-                JSON.parse(event.target.getAttribute("pd-move")) && showBtn(event.target);
-                if (event.target.parentElement) JSON.parse(event.target.parentElement.getAttribute("pd-move")) && showBtn(event.target.parentElement);
-              } else {
-                if (event.target.parentElement) {
-                  if (JSON.parse(event.target.parentElement.getAttribute("pd-move"))) {
-                    canMove = !0;
-                  } else {
-                    canMove = !1;
-                  }
-                }
+                startX = event.changedTouches[0].pageX - touchX;
+                startY = event.changedTouches[0].pageY - touchY;
+                eleReal.addEventListener("touchmove", touchMove);
               }
             });
+          }
+          if (config.scale.enable && config.rotate.enable && config.Gesture) {
+            setGesture(eleReal).gesturemove = e => {
+              touchResize(e);
+              touchRotate(e);
+            };
+          }
+          if (config.icon && config.scale.enable) eleReal.querySelectorAll(`.Pd-resize`)[0].addEventListener("touchmove", touchResize);
+          if (config.icon && config.rotate.enable) {
+            eleReal.querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchstart", event => {
+              centerPoint = getCenterPoint(eleReal);
+              prevAngle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x) - (eleConfig.rotate * Math.PI) / 180;
+            });
+            eleReal.querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchmove", touchRotate);
+          }
+          if (config.icon && config.delete) eleReal.querySelectorAll(`.Pd-delete`)[0].addEventListener("touchstart", touchDelete);
+
+          //隐藏操作按钮
+          const hideBtn = () => {
+            canMove = !1;
+            const allCon = document.querySelectorAll(`.Pd-ImgTransit`),
+              allBtn = document.querySelectorAll(`.Pd-ImgTransit-btn`);
+            for (let a of allCon) a.style.border = "none";
+            for (let a of allBtn) a.style.opacity = 0;
+          };
+          config.icon && hideBtn();
+
+          //显示操作按钮
+          const showBtn = tag => {
+            canMove = !0;
+            const curBtn = tag.querySelectorAll(`.Pd-ImgTransit-btn`);
+            for (let a of curBtn) {
+              a.style.opacity = 1;
+              if (config.border) tag.style.border = "2px dashed white";
+              topIndex++;
+              tag.style.zIndex = topIndex;
+            }
+          };
+
+          //显示当前按钮
+          document.addEventListener("touchstart", event => {
+            if (config.icon) {
+              hideBtn();
+              JSON.parse(event.target.getAttribute(`pd-move`)) && showBtn(event.target);
+              if (event.target.parentElement == eleReal) JSON.parse(event.target.parentElement.getAttribute(`pd-move`)) && showBtn(event.target.parentElement);
+            } else {
+              if (event.target.parentElement) {
+                if (JSON.parse(event.target.parentElement.getAttribute(`pd-move`))) {
+                  canMove = !0;
+                } else {
+                  canMove = !1;
+                }
+              }
+            }
           });
         };
 
         new Promise(next => {
           let eleArr = [];
           imgArr.forEach((current, idx) => {
-            let cur = imgRealArr[imgIndex[idx]],
+            let cur = that,
               btn = "";
+
             if (config.icon) {
               config.scale.enable && (btn += icon.resize);
               config.rotate.enable && (btn += icon.rotate);
               config.delete && (btn += icon.delete);
             }
-            this.append(`<div class="Pd-ImgTransit" Pd-index="${imgIndex[idx]}">${btn}</div>`);
-            let imgCon = this.get.querySelectorAll(".Pd-ImgTransit")[idx];
+            this.append(`<div class="Pd-ImgTransit pd_child_${imgIndex[idx]}">${btn}</div>`);
+            const imgCon = this.get.querySelectorAll(`.pd_child_${imgIndex[idx]}`)[idx];
             cur.style.transition = "transform .4s ease-in";
             [].slice.call(cur.attributes).forEach(attrs => {
               if (attrs.name !== "style" && attrs.name !== "id" && attrs.name !== "class") imgCon.setAttribute(attrs.name, attrs.value);
@@ -2263,15 +2161,13 @@ const icoConfig = require("./src/icoConfig.json");
             imgCon.appendChild(cur);
             cur.removeAttribute("Pd-move");
             eleArr.push(cur);
-            let theImg = new Image();
+            const theImg = new Image();
             theImg.src = cur.src;
-
             theImg.onload = () => {
               next(eleArr);
             };
-
             theImg.error = () => {
-              console.error("[错误 - ImgTransit] 图片加载失败！");
+              console.error(`[${Alphabet[8]} - ImgTransit] 图片加载失败！`);
             };
           });
         }).then(ele => {
@@ -2279,14 +2175,14 @@ const icoConfig = require("./src/icoConfig.json");
           addEvent(ele);
         });
       }
-      //FUNCTION:微信SDK
+      //微信SDK
       wxSDK(options) {
         const that = this;
-        this.usingTrack("wxSDK");
-        let sharePics;
-        let hasIcon = !1;
-        document.querySelectorAll("link").forEach(tag => {
-          if (tag.getAttribute("rel") == "shortcut icon") {
+        this.usingTrack(`wxSDK`);
+        let sharePics,
+          hasIcon = !1;
+        document.querySelectorAll(`link`).forEach(tag => {
+          if (tag.getAttribute(`rel`) == "shortcut icon") {
             sharePics = tag.href;
             hasIcon = !0;
           }
@@ -2294,7 +2190,7 @@ const icoConfig = require("./src/icoConfig.json");
 
         let config = {
           //相关接口地址(类型：字符串)
-          apiUrl: "https://wx.pandorajs.com/wxshare.ashx?url=",
+          apiUrl: `https://wx.${Alphabet[3]}/wxshare.ashx?url=`,
           //分享sdk版本
           sdk: "https://res.wx.qq.com/open/js/jweixin-1.6.0.js",
           //分享标题(类型：字符串或数组)
@@ -2302,7 +2198,7 @@ const icoConfig = require("./src/icoConfig.json");
           //分享描述(类型：字符串)
           desc: "Simple this",
           //分享图(类型：字符串或数组)
-          sharePics: sharePics || "https://pandorajs.com/share_ico.jpg",
+          sharePics: sharePics || `https://${Alphabet[3]}/share_ico.jpg`,
           //分享链接(类型：字符串或数组)
           shareLinks: window.location.href,
           //调试(类型：布尔)
@@ -2320,25 +2216,26 @@ const icoConfig = require("./src/icoConfig.json");
           },
         };
         config = this.extend(config, options);
-        const scriptTag = document.createElement("script");
+        const scriptTag = document.createElement("script"),
+          { apiUrl, sdk, title, desc, shareLinks, debug, jsApiList, callback } = config;
         scriptTag.id = "Pd_share";
-        scriptTag.src = config.sdk;
-        if (this.getEle("#Pd_share")) new PandoraAPI("#Pd_share").remove();
+        scriptTag.src = `${sdk}?${new Date().getTime()}`;
+        if (this.getEle(`#Pd_share`)) new PandoraAPI(`#Pd_share`).remove();
         document.body.appendChild(scriptTag);
 
         if (!hasIcon) {
-          const link = document.createElement("link");
+          const link = document.createElement(`link`);
           link.rel = "shortcut icon";
-          link.href = config.sharePics;
+          link.href = sharePics;
           link.type = "image/x-icon";
-          document.querySelector("head").appendChild(link);
-          console.warn("[警告] 没有检测到分享图标将使用默认值！");
+          document.querySelector(`head`).appendChild(link);
+          console.warn(`[${Alphabet[9]}] 没有检测到分享图标将使用默认值！`);
         }
 
-        let jsApiList = ["onMenuShareTimeline", "onMenuShareAppMessage", "updateTimelineShareData", "updateAppMessageShareData"];
-        if (config.jsApiList) {
-          config.jsApiList.map(e => {
-            jsApiList.push(e);
+        let jsApiLists = ["onMenuShareTimeline", "onMenuShareAppMessage", "updateTimelineShareData", "updateAppMessageShareData"];
+        if (jsApiList) {
+          jsApiList.map(e => {
+            jsApiLists.push(e);
           });
         }
 
@@ -2351,53 +2248,51 @@ const icoConfig = require("./src/icoConfig.json");
         };
 
         const timeLine = {
-            title: isObj(config.title) ? config.title[0] : config.title,
-            link: isObj(config.shareLinks) ? config.shareLinks[0] : config.shareLinks,
+            title: isObj(title) ? title[0] : title,
+            link: isObj(shareLinks) ? shareLinks[0] : shareLinks,
             imgUrl: isObj(config.sharePics) ? config.sharePics[0] : config.sharePics,
           },
           friend = {
-            title: isObj(config.title) ? config.title[1] : config.title,
-            link: isObj(config.shareLinks) ? config.shareLinks[1] : config.shareLinks,
+            title: isObj(title) ? title[1] : title,
+            link: isObj(shareLinks) ? shareLinks[1] : shareLinks,
             imgUrl: isObj(config.sharePics) ? config.sharePics[1] : config.sharePics,
-            desc: config.desc,
+            desc,
           };
 
         const success = res => {
           const { appId, timestamp, nonceStr, signature } = res;
-          wx.config({ debug: config.debug, appId, timestamp, nonceStr, signature, jsApiList });
+          wx.config({ debug, appId, timestamp, nonceStr, signature, jsApiList: jsApiLists });
           wx.ready(() => {
             new Promise(next => {
               if (wx.onMenuShareTimeline) {
                 const { title, link, imgUrl } = timeLine;
-                const { success, error } = config.callback;
-
+                const { success, error } = callback;
                 wx.onMenuShareTimeline({ title, link, imgUrl, success, error });
               } else {
                 const { title, link, imgUrl } = timeLine;
-                const { success, error } = config.callback;
+                const { success, error } = callback;
                 wx.updateTimelineShareData({ title, link, imgUrl, success, error });
               }
-
               if (wx.onMenuShareAppMessage) {
                 const { title, link, imgUrl, desc } = friend;
-                const { success, error } = config.callback;
+                const { success, error } = callback;
                 wx.onMenuShareAppMessage({ title, desc, link, imgUrl, success, error });
               } else {
                 const { title, link, imgUrl, desc } = friend;
-                const { success, error } = config.callback;
+                const { success, error } = callback;
                 wx.updateAppMessageShareData({ title, desc, link, imgUrl, success, error });
               }
               next();
-            }).then(config.callback.ready);
+            }).then(callback.ready);
           });
         };
 
         scriptTag.onload = () => {
-          that.fetch({ url: `${config.apiUrl}${encodeURIComponent(window.location.href)}`, success });
+          that.ajax({ url: `${apiUrl}${encodeURIComponent(window.location.href.split(`#`)[0])}`, success });
         };
         return this;
       }
-      //FUNCTION:懒加载
+      //懒加载
       LazyLoad(options) {
         this.usingTrack("LazyLoad");
         let config = {
@@ -2408,17 +2303,17 @@ const icoConfig = require("./src/icoConfig.json");
           icon: icoConfig.load,
         };
         config = this.extend(config, options);
-
-        const imgArr = this.child("img").get;
-        let cur = 0;
-        let lazyArr = [];
+        const imgArr = this.child(`img`).get,
+          { width, height, icon } = config;
+        let cur = 0,
+          lazyArr = [];
 
         //遍历所有图片
         for (let img of imgArr) {
           if (img.dataset.src) {
-            img.width = config.width;
-            img.height = config.height;
-            img.style.background = `url("${config.icon}") no-repeat center,black`;
+            img.width = width;
+            img.height = height;
+            img.style.background = `url("${icon}") no-repeat center,black`;
             img.style.backgroundSize = `20%`;
             lazyArr.push(img);
           }
@@ -2459,7 +2354,7 @@ const icoConfig = require("./src/icoConfig.json");
               };
 
               img.onerror = () => {
-                console.error(`[错误 - LazyLoad] 以下资源发生错误：${img.src}`);
+                console.error(`[${Alphabet[8]} - LazyLoad] 以下资源发生错误：${img.src}`);
                 cur++;
               };
             }
@@ -2483,7 +2378,7 @@ const icoConfig = require("./src/icoConfig.json");
 
   try {
     jQuery;
-    console.warn("[警告] 检测到当前页面已使用JQuery,请使用 new Pandora()");
+    console.warn(`[${Alphabet[9]}] 检测到当前页面已使用JQuery,请使用 new Pandora()`);
   } catch (err) {
     window.$ = element => {
       return new Pandora(element);
