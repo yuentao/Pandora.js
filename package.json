@@ -169,6 +169,7 @@
     "graceful-fs": "^4.2.4",
     "gulp": "^4.0.2",
     "gulp-chinese2unicode": "^1.0.1",
+    "gulp-cli": "^2.3.0",
     "gulp-header": "^2.0.9",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
@@ -416,9 +417,10 @@
   },
   "devDependencies": {},
   "scripts": {
-    "prePush": "del Pandora.min.js && del Pandora.min.js.map && npm run pack && babel Pandora.min.js --out-file Pandora.min.js && gulp minify",
-    "release": "gulp upload",
-    "pack": "webpack webpack.config.js"
+    "prePush": "del Pandora.min.js && del Pandora.min.js.map && npm run pack && babel Pandora.min.js --out-file Pandora.min.js && gulp minify --silent",
+    "release": "gulp upload --silent",
+    "pack": "webpack --config webpack.config.js --progress",
+    "test": "webpack --config webpack.test.config.js --progress"
   },
   "repository": {
     "type": "git",

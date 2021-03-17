@@ -20,15 +20,13 @@
 
   <body>
     <div id="app">
-      <img src="https://upload.pandorajs.com/image/7.jpg" alt="" />
+      <a href="">1</a>
+      <a class="test" href="">2</a>
+      <a href="">3</a>
     </div>
   </body>
   <script src="Pandora.min.js"></script>
   <script>
-    $("#app").ImgLoader({
-      callback() {
-        confirm("加载完成");
-      },
-    });
+    console.log($(".test").next().text());
   </script>
 </html>
