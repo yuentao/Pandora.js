@@ -66,7 +66,7 @@ const setGlobalCSS = (mask, maskBg, blur, plan) => {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 99999;
+      z-index: 999;
       width: 100%;
       height: 100%;
       display:flex;
@@ -74,8 +74,8 @@ const setGlobalCSS = (mask, maskBg, blur, plan) => {
       background: ${Alphabet[6]};
       background: ${maskBg};`;
 
-  blur.style.cssText = `position: absolute;top: 0;left: 0;right: 0;bottom: 0;background: ${Alphabet[6]};filter: blur(10px) saturate(2);`;
-  plan.style.cssText = `position: absolute;top: 0;left: 0;right: 0;bottom: 0;`;
+  blur.style.cssText = plan.style.cssText = `position: absolute;top: 0;left: 0;right: 0;bottom: 0;`;
+  plan.style.cssText += `background: ${Alphabet[6]};filter: blur(10px) saturate(2);`;
 
   if (maskBg) plan.style.cssText += `background:rgba(255, 255, 255, 0.66);`;
 };
@@ -197,8 +197,8 @@ window.confirm = config => {
     isMaskShow = !0;
   };
 
-  if (typeof config !== "Object") {
-    content = config;
+  if (!config.content) {
+    content = config.toString();
   } else {
     content = config.content;
     confirmText = config.confirmText;
@@ -1567,7 +1567,7 @@ const PandoraJs = SuperClass => {
     ImgLoader(options) {
       this.usingTrack("ImgLoader");
       let config = {
-        //缓步(类型：布尔)
+        //渐进式(类型：布尔)
         lazy: !0,
         //加载中(类型：方法；返回类型：数字)
         loading: null,
@@ -1590,7 +1590,7 @@ const PandoraJs = SuperClass => {
         step = 0,
         floatNum = 0;
 
-      for (let e of this.getEle("*")) {
+      for (let e of this.get.querySelectorAll("*")) {
         if (e.nodeName.toLowerCase() == "img") e.src && ImgArr.push(e.src);
         const getBg = window.getComputedStyle(e).getPropertyValue(`background-image`);
         if (getBg.indexOf(`url`) > -1 && getBg != "none" && getBg.indexOf(`data:`) < 0 && getBg.indexOf(`blob:`) < 0) {
@@ -1636,7 +1636,7 @@ const PandoraJs = SuperClass => {
       });
 
       const loadStep = () => {
-        step = (cur / total) * 100;
+        step = Math.floor((cur / total) * 100);
         if (floatNum < 100) {
           if (floatNum < step) lazy ? floatNum++ : (floatNum = step);
           this.attr("Pd-load", floatNum);
@@ -1820,26 +1820,24 @@ const PandoraJs = SuperClass => {
         //显示控制图标(类型：布尔)
         icon: !0,
         //控制图标大小(类型：数字)
-        iconSize: 40,
+        iconSize: 30,
         //显示边框(类型：布尔)
         border: !0,
         //开启多点触控(类型：布尔)
         Gesture: !1,
         //内边距(类型：数字)
-        padding: 0,
+        padding: 10,
         //缩放
         scale: {
           //是否启用(类型：布尔)
           enable: !0,
           //最小(类型：数字)
-          min: 50,
+          min: 80,
           //最大(类型：数字)
-          max: 200,
+          max: 150,
           //速率(类型：数字)
           rate: 1,
         },
-        //是否移动(类型：布尔)
-        move: !0,
         //旋转
         rotate: {
           //是否启用(类型：布尔)
@@ -1858,20 +1856,20 @@ const PandoraJs = SuperClass => {
       };
       config = this.extend(config, options);
       let that = this.get,
-        imgArr = [],
-        imgIndex = [],
         btnAnimation = "transition:opacity .2s ease-in",
-        topIndex,
-        canMove = !0;
+        imgs = that.querySelectorAll("img");
 
-      this.parent().css({ position: "relative", "touch-action": "pan" });
-
-      if (JSON.parse(that.getAttribute(`Pd-move`))) {
-        imgIndex.push(Number(that.getAttribute(`alt`)));
-        imgArr.push(that);
+      this.hide();
+      // 创建容器
+      if (!document.querySelector(".PD-TransitBox")) {
+        that.insertAdjacentHTML("afterend", "<div class='PD-TransitBox'></div>");
+        new Pandora(".PD-TransitBox").css({ "touch-action": "none", position: "relative" });
       }
-
-      topIndex = imgArr.length;
+      const TransitBox = document.querySelector(".PD-TransitBox");
+      for (let the of imgs) {
+        TransitBox.appendChild(the);
+        the.parentNode.removeChild(the);
+      }
 
       //图标配置
       const iconStyle = option => {
@@ -1888,16 +1886,6 @@ const PandoraJs = SuperClass => {
         resize: iconStyle({ left: `-${config.iconSize / 2}`, bottom: `-${config.iconSize / 2}`, name: "resize" }),
         rotate: iconStyle({ right: `-${config.iconSize / 2}`, top: `-${config.iconSize / 2}`, name: "rotate" }),
         delete: iconStyle({ left: `-${config.iconSize / 2}`, top: `-${config.iconSize / 2}`, name: "delete" }),
-      };
-
-      //删除原始元素
-      const deleteDefault = () => {
-        const imgRealArr = this.get.querySelectorAll(`img`),
-          imgArr = Array.prototype.slice.call(imgRealArr);
-        imgArr.forEach((cur, idx) => {
-          let current = imgRealArr[idx];
-          JSON.parse(current.getAttribute(`Pd-move`)) && current.parentElement.removeChild(current);
-        });
       };
 
       //设置参数
@@ -1972,27 +1960,27 @@ const PandoraJs = SuperClass => {
         );
         return obj;
       };
-
-      //添加容器事件
-      let touchStart,
-        touchEnd,
-        touchMove,
-        touchResize,
-        touchRotate,
-        touchDelete,
-        centerPoint,
-        prevAngle,
-        touchX = 0,
-        touchY = 0,
-        startX = 0,
-        startY = 0,
-        prevScale = 100;
-
+      // 添加事件
       const addEvent = ele => {
-        let eleReal = ele[0].parentElement,
+        //添加容器事件
+        let touchStart,
+          touchEnd,
+          touchMove,
+          touchResize,
+          touchRotate,
+          touchDelete,
+          centerPoint,
+          prevAngle,
+          touchX = 0,
+          touchY = 0,
+          startX = 0,
+          startY = 0,
+          prevScale = 100;
+
+        let eleReal = ele,
           eleConfig = { translate: `0,0,0`, scale: 100, rotate: 0 },
-          w = ele[0].offsetWidth,
-          h = ele[0].offsetHeight;
+          w = eleReal.offsetWidth,
+          h = eleReal.offsetHeight;
 
         eleReal.style.width = `${w}px`;
         eleReal.style.height = `${h}px`;
@@ -2000,73 +1988,71 @@ const PandoraJs = SuperClass => {
         eleReal.style.position = "absolute";
         eleReal.style.top = eleReal.style.left = "50%";
         eleReal.style.margin = `-${h / 2 + config.padding}px 0 0 -${w / 2 + config.padding}px`;
-        eleReal.style.zIndex += 1;
         eleReal.style.padding = `${config.padding}px`;
 
+        //选中元素
         touchStart = event => {
-          if (JSON.parse(event.target.parentElement.getAttribute(`pd-move`)) && event.target.className.indexOf(`Pd-ImgTransit-btn`)) event.target.style.transform = "scale(1.04)";
-          config.callback && config.callback({ type: "choose", obj: event.target });
+          event.preventDefault();
+          if (event.target.className.indexOf("pd_child") < 0) {
+            startX = event.changedTouches[0].pageX - touchX;
+            startY = event.changedTouches[0].pageY - touchY;
+            event.target.style.transform = "scale(1.04)";
+            config.callback && config.callback({ type: "choose", obj: event.target.parentElement });
+          }
         };
         touchEnd = event => {
-          if (event.target.className.indexOf(`Pd-ImgTransit-btn`)) event.target.style.transform = "scale(1)";
+          if (event.target.className.indexOf("pd_child") < 0) event.target.style.transform = "scale(1)";
         };
         //移动事件
         touchMove = event => {
-          if (event.touches.length < 2) {
-            const changePosition = () => {
-              let nowX = event.changedTouches[0].pageX,
-                nowY = event.changedTouches[0].pageY,
-                w = event.target.getBoundingClientRect().width,
-                h = event.target.getBoundingClientRect().height,
-                icon = event.target.parentElement.querySelectorAll(`.Pd-ImgTransit-btn`)[0].getBoundingClientRect(),
-                iconW = icon.width / 2;
+          if (event.touches.length < 2 && event.target.className.indexOf("pd_child") < 0) {
+            let nowX = event.changedTouches[0].pageX,
+              nowY = event.changedTouches[0].pageY,
+              w = event.target.getBoundingClientRect().width,
+              h = event.target.getBoundingClientRect().height,
+              icon = event.target.parentElement.querySelectorAll(`.Pd-ImgTransit-btn`)[0].getBoundingClientRect(),
+              iconW = icon.width / 2;
 
-              touchX = nowX - startX;
-              touchY = nowY - startY;
-              let getBounding = event.target.parentElement.parentElement.getBoundingClientRect(),
-                parentBox = {
-                  width: config.bounds ? getBounding.width + config.outBounds : getBounding.width,
-                  height: config.bounds ? getBounding.height + config.outBounds : getBounding.height,
-                };
-              if (config.bounds) {
-                if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconW) {
-                  if (touchX < 0) {
-                    touchX = -1 * (parentBox.width / 2 - w / 2 - iconW);
-                  } else {
-                    touchX = parentBox.width / 2 - w / 2 - iconW;
-                  }
-                }
-                if (Math.abs(touchY) >= parentBox.height / 2 - h / 2 - iconW) {
-                  if (touchY < 0) {
-                    touchY = -1 * (parentBox.height / 2 - h / 2 - iconW);
-                  } else {
-                    touchY = parentBox.height / 2 - h / 2 - iconW;
-                  }
+            touchX = nowX - startX;
+            touchY = nowY - startY;
+            let getBounding = event.target.parentElement.parentElement.getBoundingClientRect(),
+              parentBox = {
+                width: config.bounds ? getBounding.width + config.outBounds : getBounding.width,
+                height: config.bounds ? getBounding.height + config.outBounds : getBounding.height,
+              };
+            if (config.bounds) {
+              if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconW) {
+                if (touchX < 0) {
+                  touchX = -1 * (parentBox.width / 2 - w / 2 - iconW);
+                } else {
+                  touchX = parentBox.width / 2 - w / 2 - iconW;
                 }
               }
-              eleConfig.translate = `${touchX}px,${touchY}px,0`;
-              setConfig(eleReal, eleConfig);
-            };
+              if (Math.abs(touchY) >= parentBox.height / 2 - h / 2 - iconW) {
+                if (touchY < 0) {
+                  touchY = -1 * (parentBox.height / 2 - h / 2 - iconW);
+                } else {
+                  touchY = parentBox.height / 2 - h / 2 - iconW;
+                }
+              }
+            }
+            eleConfig.translate = `${touchX}px,${touchY}px,0`;
+            setConfig(eleReal, eleConfig);
             config.callback && config.callback({ type: "move", obj: eleReal });
-            canMove && changePosition();
           }
         };
         //缩放事件
         touchResize = event => {
           event.stopImmediatePropagation();
           event.preventDefault();
-          if (canMove) {
-            const x = event.changedTouches[0].pageX - eleReal.getBoundingClientRect().left;
-            if (x > 0 && eleConfig.scale > config.scale.min) eleConfig.scale -= config.scale.rate;
-            if (x < 0 && eleConfig.scale < config.scale.max) eleConfig.scale += config.scale.rate;
-          }
-
+          const x = event.changedTouches[0].pageX - eleReal.getBoundingClientRect().left;
+          if (x > 0 && eleConfig.scale > config.scale.min) eleConfig.scale -= config.scale.rate;
+          if (x < 0 && eleConfig.scale < config.scale.max) eleConfig.scale += config.scale.rate;
           if (event.touches.length >= 2) {
             if (config.scale.enable) {
               prevScale = event.scale * 100;
               eleConfig.scale = prevScale;
             }
-
             if (config.rotate.enable) eleConfig.rotate = event.rotation;
           }
           setConfig(eleReal, eleConfig);
@@ -2076,40 +2062,26 @@ const PandoraJs = SuperClass => {
         touchRotate = event => {
           event.stopImmediatePropagation();
           event.preventDefault();
-          const changeRotate = () => {
-            const angle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x);
-            eleConfig.rotate = Math.floor(((angle - prevAngle) * 180) / Math.PI) * config.rotate.rate;
-            setConfig(eleReal, eleConfig);
-          };
+          const angle = Math.atan2(event.changedTouches[0].pageY - centerPoint.y, event.changedTouches[0].pageX - centerPoint.x);
+          eleConfig.rotate = Math.floor(((angle - prevAngle) * 180) / Math.PI) * config.rotate.rate;
+          setConfig(eleReal, eleConfig);
           config.callback && config.callback({ type: "rotate", obj: eleReal });
-          canMove && changeRotate();
         };
         //删除事件
         touchDelete = event => {
           event.stopImmediatePropagation();
           event.preventDefault();
-          const deleteObj = () => {
-            eleConfig.translate = "0,0,0";
-            eleConfig.rotate = 0;
-            eleConfig.scale = 100;
-            setConfig(eleReal, eleConfig);
-            eleReal.style.display = "none";
-            config.callback && config.callback({ type: "delete", obj: eleReal });
-          };
-          canMove && deleteObj();
+          eleConfig.translate = "0,0,0";
+          eleConfig.rotate = 0;
+          eleConfig.scale = 100;
+          setConfig(eleReal, eleConfig);
+          eleReal.style.display = "none";
+          config.callback && config.callback({ type: "delete", obj: eleReal });
         };
         //绑定所有操作
         eleReal.addEventListener("touchstart", touchStart);
         eleReal.addEventListener("touchend", touchEnd);
-        if (config.move) {
-          eleReal.addEventListener("touchstart", event => {
-            if (event.touches.length < 2) {
-              startX = event.changedTouches[0].pageX - touchX;
-              startY = event.changedTouches[0].pageY - touchY;
-              eleReal.addEventListener("touchmove", touchMove);
-            }
-          });
-        }
+        eleReal.addEventListener("touchmove", touchMove);
         if (config.scale.enable && config.rotate.enable && config.Gesture) {
           setGesture(eleReal).gesturemove = e => {
             touchResize(e);
@@ -2125,79 +2097,56 @@ const PandoraJs = SuperClass => {
           eleReal.querySelectorAll(`.Pd-rotate`)[0].addEventListener("touchmove", touchRotate);
         }
         if (config.icon && config.delete) eleReal.querySelectorAll(`.Pd-delete`)[0].addEventListener("touchstart", touchDelete);
-
-        //隐藏操作按钮
-        const hideBtn = () => {
-          canMove = !1;
-          const allCon = document.querySelectorAll(`.Pd-ImgTransit`),
-            allBtn = document.querySelectorAll(`.Pd-ImgTransit-btn`);
-          for (let a of allCon) a.style.border = "none";
-          for (let a of allBtn) a.style.opacity = 0;
-        };
-        config.icon && hideBtn();
-
-        //显示操作按钮
-        const showBtn = tag => {
-          canMove = !0;
-          const curBtn = tag.querySelectorAll(`.Pd-ImgTransit-btn`);
-          for (let a of curBtn) {
-            a.style.opacity = 1;
-            if (config.border) tag.style.border = "2px dashed white";
-            topIndex++;
-            tag.style.zIndex = topIndex;
-          }
-        };
-
-        //显示当前按钮
-        document.addEventListener("touchstart", event => {
-          if (config.icon) {
-            hideBtn();
-            JSON.parse(event.target.getAttribute(`pd-move`)) && showBtn(event.target);
-            if (event.target.parentElement == eleReal) JSON.parse(event.target.parentElement.getAttribute(`pd-move`)) && showBtn(event.target.parentElement);
-          } else {
-            if (event.target.parentElement) {
-              if (JSON.parse(event.target.parentElement.getAttribute(`pd-move`))) {
-                canMove = !0;
-              } else {
-                canMove = !1;
-              }
-            }
-          }
-        });
       };
 
-      new Promise(next => {
-        let eleArr = [];
-        imgArr.forEach((current, idx) => {
-          let cur = that,
-            btn = "";
+      //隐藏操作按钮
+      const hideBtn = () => {
+        const allCon = TransitBox.querySelectorAll(`.Pd-ImgTransit`),
+          allBtn = TransitBox.querySelectorAll(`.Pd-ImgTransit-btn`);
+        for (let a of allCon) {
+          a.style.border = "none";
+          a.style.zIndex = 1;
+        }
+        for (let a of allBtn) a.style.opacity = 0;
+      };
 
-          if (config.icon) {
-            config.scale.enable && (btn += icon.resize);
-            config.rotate.enable && (btn += icon.rotate);
-            config.delete && (btn += icon.delete);
-          }
-          this.append(`<div class="Pd-ImgTransit pd_child_${imgIndex[idx]}">${btn}</div>`);
-          const imgCon = this.get.querySelectorAll(`.pd_child_${imgIndex[idx]}`)[idx];
-          cur.style.transition = "transform .4s ease-in";
-          [].slice.call(cur.attributes).forEach(attrs => {
-            if (attrs.name !== "style" && attrs.name !== "id" && attrs.name !== "class") imgCon.setAttribute(attrs.name, attrs.value);
-          });
-          imgCon.appendChild(cur);
-          cur.removeAttribute("Pd-move");
-          eleArr.push(cur);
-          const theImg = new Image();
-          theImg.src = cur.src;
-          theImg.onload = () => {
-            next(eleArr);
-          };
-          theImg.error = () => {
-            console.error(`[${Alphabet[8]} - ImgTransit] 加载失败！`);
-          };
-        });
-      }).then(ele => {
-        deleteDefault();
-        addEvent(ele);
+      //显示操作按钮
+      const showBtn = tag => {
+        const curBtn = tag.querySelectorAll(`.Pd-ImgTransit-btn`);
+        for (let a of curBtn) {
+          a.style.opacity = 1;
+          if (config.border) tag.style.border = "2px dashed white";
+          tag.style.zIndex = 2;
+        }
+      };
+
+      // 初始化
+      for (let the of imgs) {
+        let btn = "";
+        if (config.icon) {
+          config.scale.enable && (btn += icon.resize);
+          config.rotate.enable && (btn += icon.rotate);
+          config.delete && (btn += icon.delete);
+        }
+
+        const TransitElement = document.createElement("div");
+        TransitElement.className = `Pd-ImgTransit pd_child_${the.alt}`;
+        TransitElement.style.position = "absolute";
+        the.style.transition = "transform .4s ease-in";
+        TransitElement.innerHTML = btn;
+        TransitElement.appendChild(the);
+        TransitBox.appendChild(TransitElement);
+        addEvent(TransitElement);
+      }
+
+      hideBtn();
+      //显示当前按钮
+      TransitBox.addEventListener("touchstart", event => {
+        hideBtn();
+        if (event.target !== TransitBox && event.target.className.indexOf("pd_child") < 0) {
+          config.icon ? showBtn(event.target.parentElement) : hideBtn();
+          event.target.zIndex = 1;
+        }
       });
     }
     //微信SDK
