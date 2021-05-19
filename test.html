@@ -1,127 +1,14 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width" />
     <meta charset="utf-8" />
     <title>无标题文档</title>
-    <style>
-      .loader {
-        width: 100%;
-        height: 50vh;
-        position: relative;
-      }
-      .test {
-        text-align: center;
-        color: white;
-        font-size: 30px;
-        font-family: simhei;
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background: black;
-        z-index: 999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .t1 {
-        background: url("https://upload.pandorajs.com/image/1.jpg") round;
-        display: none;
-      }
-      .t2 {
-        background: url("https://upload.pandorajs.com/image/2.jpg") round;
-        display: none;
-      }
-      .t3 {
-        background: url("https://upload.pandorajs.com/image/3.jpg") round;
-        display: none;
-      }
-      .t4 {
-        background: url("https://upload.pandorajs.com/image/4.jpg") round;
-        display: none;
-      }
-      .t5 {
-        background: url("https://upload.pandorajs.com/image/5.jpg") round;
-        display: none;
-      }
-      .t6 {
-        background: url("https://upload.pandorajs.com/image/6.jpg") round;
-        display: none;
-      }
-      .t7 {
-        background: url("https://upload.pandorajs.com/image/7.jpg") round;
-        display: none;
-      }
-      img {
-        width: 100%;
-      }
-    </style>
   </head>
-
   <body>
-    <!-- 渐进式 PS：图片较多时推荐使用，图片较少时会花费较长的时间用来走完进度。-->
-    <div class="loader loader_1">
-      <div class="test">0%</div>
-      <img src="https://upload.pandorajs.com/image/upload.pandorajs.com_PandoraAPI_1578307152137/Yz_D2vlP3to.jpg?v1" alt="" />
-      <div class="t1"></div>
-      <div class="t2"></div>
-      <div class="t3"></div>
-      <div class="t4"></div>
-      <div class="t5"></div>
-      <div class="t6"></div>
-      <div class="t7"></div>
-    </div>
-
-    <!-- 普通 -->
-    <div class="loader loader_2">
-      <div class="test">0%</div>
-      <img src="https://upload.pandorajs.com/image/upload.pandorajs.com_PandoraAPI_1578307152137/Yz_D2vlP3to.jpg?v2" alt="" />
-      <div class="t1"></div>
-      <div class="t2"></div>
-      <div class="t3"></div>
-      <div class="t4"></div>
-      <div class="t5"></div>
-      <div class="t6"></div>
-      <div class="t7"></div>
-    </div>
+    <div id="test">3</div>
   </body>
-  <script src="//b.pandorajs.com/Pandora/Pandora.min.js"></script>
+  <script src="Pandora.min.js"></script>
   <script>
-    $(".loader_1").ImgLoader({
-      //加载中
-      loading: function (e) {
-        document.querySelector(".loader_1 .test").innerHTML = e + "%";
-      },
-      //加载完成
-      callback: function () {
-        document.querySelector(".loader_1 .test").style.display = "none";
-        alert("渐进式加载完成");
-      },
-      //加载错误
-      error: function () {
-        console.error("资源加载错误");
-        alert("资源加载错误");
-      },
-    });
-
-    $(".loader_2").ImgLoader({
-      lazy: !1,
-      //加载中
-      loading: function (e) {
-        document.querySelector(".loader_2 .test").innerHTML = e + "%";
-      },
-      //加载完成
-      callback: function () {
-        document.querySelector(".loader_2 .test").style.display = "none";
-        alert("加载完成");
-      },
-      //加载错误
-      error: function () {
-        console.error("资源加载错误");
-        alert("资源加载错误");
-      },
-    });
+    console.log($("#test"));
   </script>
 </html>

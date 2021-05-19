@@ -1,9 +1,9 @@
-const templatePolyfill = require("template-polyfill");
-require("core-js/es6/promise");
-require("core-js/es6/object");
-require("core-js/es6/symbol");
-require("core-js/es6/array");
-require("core-js/es6/string");
+// const templatePolyfill = require("template-polyfill");
+// require("core-js/es6/promise");
+// require("core-js/es6/object");
+// require("core-js/es6/symbol");
+// require("core-js/es6/array");
+// require("core-js/es6/string");
 const icoConfig = require("./src/icoConfig.json");
 // 缺省字段
 const Alphabet = ["active", "local", "localhost", "pandorajs.com", "127.0.0.1", "192.168", "inherit", "提示", "错误", "警告"];
@@ -11,6 +11,7 @@ const Alphabet = ["active", "local", "localhost", "pandorajs.com", "127.0.0.1", 
 //兼容处理&&基础方法
 // 启用插件追踪
 window.enableTrack = !0;
+window.pdDialogs = [];
 
 // 是否符合追踪条件
 const canTrack = () => {
@@ -23,7 +24,7 @@ canTrack() && console.info(`[${Alphabet[7]}] 启用跟踪，关闭请修改 wind
 //requestAnimationFrame
 if (!window.requestAnimationFrame) {
   window.requestAnimationFrame = callback => {
-    let currTime = new Date().getTime(),
+    const currTime = new Date().getTime(),
       timeToCall = Math.max(0, 16 - (currTime - lastTime)),
       id = setTimeout(() => {
         callback(currTime + timeToCall);
@@ -63,21 +64,21 @@ document.querySelector("head").appendChild(style);
 let isMaskShow = !1;
 const setGlobalCSS = (mask, maskBg, blur, plan) => {
   mask.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 999;
-      width: 100%;
-      height: 100%;
+      position:fixed;
+      top:0;
+      left:0;
+      z-index:999;
+      width:100%;
+      height:100%;
       display:flex;
       justify-content:center;
-      background: ${Alphabet[6]};
-      background: ${maskBg};`;
+      background:${Alphabet[6]};
+      background:${maskBg}`;
 
-  blur.style.cssText = plan.style.cssText = `position: absolute;top: 0;left: 0;right: 0;bottom: 0;`;
-  plan.style.cssText += `background: ${Alphabet[6]};filter: blur(10px) saturate(2);`;
+  blur.style.cssText = plan.style.cssText = `position:absolute;top:0;left:0;right:0;bottom:0`;
+  plan.style.cssText += `background:${Alphabet[6]};filter:blur(10px) saturate(2)`;
 
-  if (maskBg) plan.style.cssText += `background:rgba(255, 255, 255, 0.66);`;
+  if (maskBg) plan.style.cssText += `background:rgba(255,255,255,.66)`;
 };
 //修改原生alert
 window.alert = content => {
@@ -93,23 +94,23 @@ window.alert = content => {
     color = getRoot(`alertColor`);
 
   setGlobalCSS(mask, maskBg, blur, plan);
-  mask.style.cssText += `align-items: flex-end;`;
+  mask.style.cssText += `align-items:flex-end`;
   div.style.cssText = `
-      background: ${Alphabet[6]};
+      background:${Alphabet[6]};
       background:${Theme};
-      text-align: center;
-      color: ${color};
-      font-size: ${fontSize};
-      padding: 1em 2em;
-      line-height: 1.5;
-      transition: opacity .4s ease-out;
+      text-align:center;
+      color:${color};
+      font-size:${fontSize};
+      padding:1em 2em;
+      line-height:1.5;
+      transition:opacity .4s ease-out;
       margin-bottom:5vh;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 6px;
-      position: relative;
-      overflow: hidden;`;
-  msg.style.cssText = `margin:0;position: relative;`;
+      box-shadow:0 8px 16px rgba(0,0,0,.25);
+      border:1px solid rgba(0,0,0,.1);
+      border-radius:6px;
+      position:relative;
+      overflow:hidden`;
+  msg.style.cssText = `margin:0;position:relative`;
 
   msg.innerText = content ? content.toString() : "";
   div.appendChild(blur);
@@ -153,27 +154,27 @@ window.confirm = config => {
     fontSize = getRoot(`confirmFontSize`),
     color = getRoot(`confirmColor`),
     btnColor = getRoot(`confirmBtnColor`);
-  const showConfirm = config.showConfirm == undefined ? true : config.showConfirm,
-    showCancel = config.showCancel == undefined ? true : config.showCancel;
+  const showConfirm = config.showConfirm == undefined ? !0 : config.showConfirm,
+    showCancel = config.showCancel == undefined ? !0 : config.showCancel;
 
   setGlobalCSS(mask, maskBg, blur, plan);
   mask.style.cssText += "align-items: center;";
   div.style.cssText = `
-      background: ${Alphabet[6]};
+      background:${Alphabet[6]};
       background:${Theme};
-      text-align: center;
-      color: ${color};
-      font-size: ${fontSize};
-      padding: 1.5em;
+      text-align:center;
+      color:${color};
+      font-size:${fontSize};
+      padding:1.5em;
       max-width:75vw;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 6px;
-      position: relative;
-      overflow: hidden;`;
+      box-shadow:0 8px 16px rgba(0,0,0,.25);
+      border:1px solid rgba(0,0,0,.1);
+      border-radius:6px;
+      position:relative;
+      overflow:hidden`;
 
-  msg.style.cssText = `margin:0;position: relative;line-height: 2;`;
-  const buttonCSS = `position: relative;margin: 2.5em 1em 0 1em;font-size: .8em;appearance: none;background: ${btnBg};color: ${btnColor};border: none;padding: 1em 3em;cursor: pointer;outline: none;`;
+  msg.style.cssText = `margin:0;position:relative;line-height:2`;
+  const buttonCSS = `position:relative;margin:2.5em 1em 0 1em;font-size:.8em;appearance:none;background:${btnBg};color:${btnColor};border:none;padding:1em 3em;cursor:pointer;outline:none`;
   confirm.style.cssText = cancel.style.cssText = buttonCSS;
 
   const removeConfirm = () => {
@@ -186,11 +187,15 @@ window.confirm = config => {
     div.appendChild(blur);
     div.appendChild(plan);
     div.appendChild(msg);
-    if (showConfirm) confirm.innerText = confirmText ? confirmText.toString() : "确认";
-    if (showCancel) cancel.innerText = cancelText ? cancelText.toString() : "取消";
 
-    showConfirm && div.appendChild(confirm);
-    showCancel && div.appendChild(cancel);
+    if (showConfirm) {
+      confirm.innerText = confirmText ? confirmText.toString() : "确认";
+      div.appendChild(confirm);
+    }
+    if (showCancel) {
+      cancel.innerText = cancelText ? cancelText.toString() : "取消";
+      div.appendChild(cancel);
+    }
 
     mask.appendChild(div);
     document.body.appendChild(mask);
@@ -209,16 +214,19 @@ window.confirm = config => {
   createModel();
 
   return new Promise((ok, no) => {
-    if (showConfirm)
+    if (showConfirm) {
       confirm.onclick = () => {
         removeConfirm();
         success ? success() : ok();
       };
-    if (showCancel)
+    }
+
+    if (showCancel) {
       cancel.onclick = () => {
         removeConfirm();
         fail ? fail() : no();
       };
+    }
   });
 };
 //loading遮罩
@@ -229,7 +237,7 @@ window.showLoading = () => {
 
   svg.src = icoConfig.load;
   mask.id = `${LoadingName}`;
-  mask.style.cssText = "width:100%;height:100%;position: fixed;z-index: 999;top: 0;left: 0;background:rgba(0,0,0,.65);display:flex;align-items: center; justify-content: center;";
+  mask.style.cssText = "width:100%;height:100%;position:fixed;z-index:999;top:0;left:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center";
 
   document.querySelector(`#${LoadingName}`) && document.body.removeChild(document.querySelector(`#${LoadingName}`));
   mask.appendChild(svg);
@@ -240,25 +248,24 @@ window.hideLoading = () => {
 };
 
 //内置方法
-const PandoraAPI = class {
-  constructor(element = "html") {
-    this.element = element;
-    this.getEle = ele => {
+class PandoraAPI {
+  constructor(input = null) {
+    this.getInput = obj => {
       const typeArr = ["[object Window]", "[object HTMLDocument]"];
-      if (typeArr.includes(ele + "")) return window;
+      if (Array.isArray(obj)) return obj;
+      if (typeArr.includes(obj + "")) return window;
 
-      if (document.querySelectorAll(ele)) {
-        if (document.querySelectorAll(ele).length > 1) {
-          return document.querySelectorAll(ele);
+      if (document.querySelectorAll(obj)) {
+        if (document.querySelectorAll(obj).length > 1) {
+          return document.querySelectorAll(obj);
         } else {
-          return document.querySelector(ele);
+          return document.querySelector(obj);
         }
       } else {
-        return console.error(`[${Alphabet[8]}] 未找到 ${this.element}！`);
+        return console.error(`[${Alphabet[8]}] 未找到 ${obj}！`);
       }
     };
-    this.init = () => this.getEle(element);
-    this.get = this.init();
+    this.get = this.getInput(input);
     this.guid = () => {
       const S4 = () => {
         return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
@@ -281,7 +288,11 @@ const PandoraAPI = class {
     //选择指定下标元素
     this.eq = index => {
       try {
-        this.get = this.getEle(element)[index];
+        if (this.getInput(input).length) {
+          this.get = this.getInput(input)[index];
+        } else {
+          this.get = this.getInput(input);
+        }
       } catch (err) {
         console.error(`[${Alphabet[8]}] 未找到该下标！\n${err}`);
       }
@@ -331,10 +342,27 @@ const PandoraAPI = class {
       this.get = ele.nextElementSibling;
       return this;
     };
+    //选择第一个元素
+    this.first = () => {
+      return this.eq(0);
+    };
+    //选择最后一个元素
+    this.last = () => {
+      const ele = this.get;
+      if (ele.length) {
+        return this.eq(ele.length - 1);
+      } else {
+        return this.first();
+      }
+    };
     //遍历元素集
     this.each = fn => {
       const ele = this.get;
-      for (let i = 0; i < ele.length; i++) fn && fn(this.eq(i), i);
+      if (ele.length) {
+        for (let i = 0; i < ele.length; i++) fn && fn(this.eq(i), i);
+      } else {
+        fn && fn(this.first(), 0);
+      }
       return this;
     };
     //获取或修改样式
@@ -362,8 +390,9 @@ const PandoraAPI = class {
             });
           }
         }
+      } else {
+        return window.getComputedStyle(ele).getPropertyValue("*");
       }
-      return this;
     };
     //获取或插入文本
     this.text = str => {
@@ -488,12 +517,12 @@ const PandoraAPI = class {
     //添加class
     this.addClass = name => {
       const ele = this.get,
-        addThat = ele => {
-          const beforeClass = ele.classList.value;
+        addThat = the => {
+          const beforeClass = the.classList.value;
           if (beforeClass) {
-            if (beforeClass.indexOf(name) < 0) ele.className = `${beforeClass} ${name.trim()}`;
+            if (beforeClass.indexOf(name) < 0) the.className = `${beforeClass} ${name.trim()}`;
           } else {
-            ele.className = name.trim();
+            the.className = name.trim();
           }
         };
       if (ele.length) {
@@ -505,21 +534,23 @@ const PandoraAPI = class {
     };
     //移除class
     this.removeClass = name => {
-      const ele = this,
-        removeThat = ele => {
-          let beforeClass = ele.classList.value.split(" "),
-            afterClass;
-          beforeClass.map((cur, idx) => {
-            if (cur === name) beforeClass.splice(idx, 1);
-          });
-          afterClass = beforeClass.join(" ");
-          ele.className = afterClass;
+      const ele = this.get,
+        removeThat = the => {
+          if (the.classList.value) {
+            let beforeClass = the.classList.value.split(" "),
+              afterClass;
+            beforeClass.map((cur, idx) => {
+              if (cur === name) beforeClass.splice(idx, 1);
+            });
+            afterClass = beforeClass.join(" ");
+            the.className = afterClass;
+          }
         };
 
       if (ele.length) {
-        for (let e of ele.get) removeThat(e);
+        for (let the of ele) removeThat(the);
       } else {
-        removeThat(ele.get);
+        removeThat(ele);
       }
       return this;
     };
@@ -599,26 +630,42 @@ const PandoraAPI = class {
       const ele = this.get;
       if (ele.length) {
         for (let the of ele) {
-          the.eventList.map((e, i) => {
+          if (the.eventList) {
+            the.eventList.map((e, i) => {
+              if (e.name === eventName) {
+                the.removeEventListener(eventName, e.callback);
+                the.eventList.splice(i, 1);
+              }
+            });
+          }
+        }
+      } else {
+        if (ele.eventList) {
+          ele.eventList.map((e, i) => {
             if (e.name === eventName) {
-              the.removeEventListener(eventName, e.callback);
-              the.eventList.splice(i, 1);
+              ele.removeEventListener(eventName, e.callback);
+              ele.eventList.splice(i, 1);
             }
           });
         }
-      } else {
-        ele.eventList.map((e, i) => {
-          if (e.name === eventName) {
-            ele.removeEventListener(eventName, e.callback);
-            ele.eventList.splice(i, 1);
-          }
-        });
       }
       return this;
     };
     //点击事件
     this.click = fn => {
-      this.bind("click", fn);
+      const ele = this.get;
+      if (ele.length) {
+        for (let a = 0; a < ele.length; a++) {
+          ele[a].onclick = () => {
+            this.get = ele[a];
+            fn(this, a);
+          };
+        }
+      } else {
+        ele.onclick = () => {
+          fn(this, null);
+        };
+      }
       return this;
     };
     //长按事件
@@ -642,8 +689,8 @@ const PandoraAPI = class {
       };
       ele.ontouchend = () => {
         cancelAnimationFrame(infiniteFrame);
-        return this;
       };
+      return this;
     };
     //显示
     this.show = callback => {
@@ -656,6 +703,63 @@ const PandoraAPI = class {
       if (!this.attr(`beforeHide`)) this.attr("beforeHide", this.css(`display`) == "none" ? "block" : this.css(`display`));
       this.css({ display: "none" });
       callback && setTimeout(callback);
+      return this;
+    };
+    // 淡入
+    this.fadeIn = (speed = "fast", callback = null) => {
+      const that = this;
+      let opacity = 0,
+        req;
+
+      const fade = () => {
+        if (opacity < 100) {
+          switch (speed) {
+            case "fast":
+              opacity += 5;
+              break;
+            case "slow":
+              opacity++;
+              break;
+          }
+          that.css({ opacity: opacity / 100 });
+          req = requestAnimationFrame(fade);
+        } else {
+          callback && callback();
+          cancelAnimationFrame(req);
+        }
+      };
+      that.show();
+      that.css({ opacity: 0 });
+      !Number(that.css("opacity")) && fade();
+
+      return this;
+    };
+    // 淡出
+    this.fadeOut = (speed = "fast", callback = null) => {
+      const that = this;
+      let opacity = 100,
+        req;
+
+      const fade = () => {
+        if (opacity > 0) {
+          switch (speed) {
+            case "fast":
+              opacity -= 5;
+              break;
+            case "slow":
+              opacity--;
+              break;
+          }
+          that.css({ opacity: opacity / 100 });
+          req = requestAnimationFrame(fade);
+        } else {
+          that.hide();
+          callback && callback();
+          cancelAnimationFrame(req);
+        }
+      };
+      Number(that.css("opacity")) && fade();
+
       return this;
     };
     //ajax
@@ -695,7 +799,7 @@ const PandoraAPI = class {
         params = data;
       }
 
-      http.onload = () => {
+      http.onload = err => {
         if (http.status === 200 || http.statusText === "OK" || http.readyState === 4) {
           const res = http.response;
           try {
@@ -706,7 +810,7 @@ const PandoraAPI = class {
           }
           success && success(JSON.parse(res));
         } else {
-          error && error();
+          error && error(err);
         }
       };
 
@@ -762,7 +866,17 @@ const PandoraAPI = class {
       for (let e of ele.querySelectorAll(`*`)) {
         if (e.getAttribute(`name`)) {
           const keyName = e.getAttribute(`name`);
-          if (keyName) obj[keyName] = e.value;
+
+          if (keyName) {
+            switch (e.type) {
+              case "radio":
+                if (e.checked) obj[keyName] = e.value;
+                break;
+              default:
+                obj[keyName] = e.value;
+                break;
+            }
+          }
         }
       }
       return obj;
@@ -841,13 +955,39 @@ const PandoraAPI = class {
       const routePath = getRoutePath() || "/";
       callback(routePath);
     };
+    // TODO数组相关方法
+    this.Array = {
+      // 原始数组
+      originals: this.get,
+      // 随机打乱数组
+      Random() {
+        let originals = this.originals;
+        for (let i = 0; i < originals.length; i++) originals[i] = originals[i];
+        originals.sort(() => {
+          return 0.5 - Math.random();
+        });
+        return originals;
+      },
+      // 判断是否存在重复
+      hasRepeat() {
+        let originals = this.originals;
+        let hash = {};
+        for (let i in originals) {
+          if (hash[originals[i]]) {
+            return !0;
+          }
+          hash[originals[i]] = !0;
+        }
+        return !1;
+      },
+    };
   }
-};
+}
 //拓展方法
 const PandoraJs = SuperClass => {
   return class extends SuperClass {
-    constructor(element) {
-      super(element);
+    constructor(obj) {
+      super(obj);
     }
     //Mustache渲染
     Mush(options) {
@@ -862,11 +1002,11 @@ const PandoraJs = SuperClass => {
       config = this.extend(config, options);
       let Html = this.html(),
         bHtml = Html,
-        pattern = new RegExp("{{.*?}}", "g"),
-        patterns = new RegExp("{{.*?}}"),
         matchValue;
       const that = this,
-        { data, Init, Update } = config;
+        { data, Init, Update } = config,
+        pattern = new RegExp("{{.*?}}", "g"),
+        patterns = new RegExp("{{.*?}}");
 
       // 重构渲染数据
       const getObj = res => {
@@ -926,6 +1066,7 @@ const PandoraJs = SuperClass => {
 
       renderHtml();
       Init && Init(getObj(that.globalData));
+
       return this;
     }
     //静态路由
@@ -937,7 +1078,6 @@ const PandoraJs = SuperClass => {
       config = this.extend(config, options);
       const that = this,
         { routes } = config;
-      templatePolyfill();
 
       // 遍历路由路径
       const eachRoutes = path => {
@@ -951,7 +1091,7 @@ const PandoraJs = SuperClass => {
                   that
                     .template(path, that.get)
                     .then(() => {
-                      let query = that.getParams();
+                      const query = that.getParams();
                       window.location.href = `#${path}`;
                       e.callback && e.callback(query);
                       success();
@@ -960,7 +1100,7 @@ const PandoraJs = SuperClass => {
                         window.onhashchange = () => {
                           that.hashChange(eachRoutes);
                         };
-                      });
+                      }, 50);
                     })
                     .catch(err => {
                       e.error && e.error(err);
@@ -977,17 +1117,13 @@ const PandoraJs = SuperClass => {
         if (path.indexOf(`?`) > -1) {
           setTimeout(() => {
             location.href = `#${path}`;
-          });
+          }, 50);
         } else {
           eachRoutes(path);
         }
       };
+      routes ? eachRoutes(routes[0].path) : console.error(`[${Alphabet[8]} - Router] 不存在任何路由！`);
 
-      if (routes) {
-        eachRoutes(routes[0].path);
-      } else {
-        console.error(`[${Alphabet[8]} - Router] 不存在任何路由！`);
-      }
       return this;
     }
     //轮播切换
@@ -1024,19 +1160,19 @@ const PandoraJs = SuperClass => {
       config = this.extend(config, options);
       const { Speed, Curve, Effect, Direction, Inertia, Distance, AutoSpeed, Pagination, Hover, Scroll, InitPage, Loop, onChange } = config,
         childEle = this.get,
-        parentEle = childEle[0].parentElement;
-      let childW = childEle[0].offsetWidth,
+        parentEle = childEle[0].parentElement,
+        childW = childEle[0].offsetWidth,
         childH = childEle[0].offsetHeight,
-        cur = InitPage,
-        AutoTimeout,
-        isScrolling = !1;
-      const total = childEle.length,
+        total = childEle.length,
         transitionend = () => {
           if (isScrolling) {
             isScrolling = !1;
             parentEle.removeEventListener("transitionend", transitionend);
           }
         };
+      let cur = InitPage,
+        AutoTimeout,
+        isScrolling = !1;
 
       //切换
       const Swiper = (moveTo = null) => {
@@ -1051,12 +1187,10 @@ const PandoraJs = SuperClass => {
           default:
             switch (Direction) {
               case "vertical":
-                childH = childEle[0].offsetHeight;
                 parentEle.style.transform = `translate3d(0,${-1 * (childH * cur)}px,0)`;
                 break;
               case "horizontal":
               default:
-                childW = childEle[0].offsetWidth;
                 parentEle.style.transform = `translate3d(${-1 * (childW * cur)}px,0,0)`;
                 break;
             }
@@ -1082,9 +1216,7 @@ const PandoraJs = SuperClass => {
           childEle[cur].className += Alphabet[0];
         }
         if (Pagination) {
-          if (parentEle.parentElement.querySelector(`.Pd-pagination`)) {
-            parentEle.parentElement.removeChild(parentEle.parentElement.querySelector(`.Pd-pagination`));
-          }
+          parentEle.parentElement.querySelector(`.Pd-pagination`) && parentEle.parentElement.removeChild(parentEle.parentElement.querySelector(`.Pd-pagination`));
           const pager = document.createElement("div");
           pager.className = "Pd-pagination";
 
@@ -1097,6 +1229,7 @@ const PandoraJs = SuperClass => {
             pager.appendChild(pageChild);
           }
           parentEle.parentElement.insertBefore(pager, parentEle.nextElementSibling);
+
           for (let a = 0; a < parentEle.parentElement.querySelectorAll(`.Pd-pagination a`).length; a++) {
             const e = parentEle.parentElement.querySelectorAll(`.Pd-pagination a`)[a],
               idx = a;
@@ -1131,10 +1264,6 @@ const PandoraJs = SuperClass => {
         }
         Swiper();
       };
-
-      this.prev = Prev;
-      this.next = Next;
-      this.direct = Swiper;
 
       let startX, startY, endX, endY, curX, curY;
       //方法：滑动开始
@@ -1307,7 +1436,7 @@ const PandoraJs = SuperClass => {
                   parentEle.style.flexDirection = "row";
                   break;
               }
-              parentEle.style.cssText += "touch-action: pan-x;touch-action: pan-y";
+              parentEle.style.cssText += "touch-action: none";
               parentEle.style.display = "flex";
               parentEle.style.transition = `transform ${Speed}s ${Curve}`;
               break;
@@ -1342,12 +1471,17 @@ const PandoraJs = SuperClass => {
           });
       };
 
+      this.prev = Prev;
+      this.next = Next;
+      this.direct = Swiper;
+
       Init();
       let req;
       window.addEventListener("resize", () => {
         clearTimeout(req);
         req = setTimeout(Init, 200);
       });
+
       return this;
     }
     //字体自适应
@@ -1384,17 +1518,18 @@ const PandoraJs = SuperClass => {
           if (isMobile) return !1;
           if (platform.indexOf(c) > 0 && PageSize !== "device-width") {
             isMobile = !0;
-            this.css({ "font-size": `${(window.screen.width / 3.75) * Ratio}px` });
+            new PandoraAPI(`html`).css({ "font-size": `${(window.screen.width / 3.75) * Ratio}px` });
           } else {
             isMobile = !1;
-            this.css({ "font-size": this.css(`font-size`) });
+            new PandoraAPI(`html`).css({ "font-size": new PandoraAPI(`html`).css(`font-size`) });
           }
-          this.attr("isMobile", isMobile);
+          new PandoraAPI(`html`).attr("isMobile", isMobile);
         });
       };
 
       SetSize();
       window.onresize = SetSize;
+
       return this;
     }
     //自定义弹框
@@ -1445,18 +1580,26 @@ const PandoraJs = SuperClass => {
       //关闭弹框
       const closeDialog = () => {
         return new Promise(next => {
-          Effect(`out`);
-          if (Direction === "none") {
-            mask && parent.removeChild(masker);
-            this.css({ display: "none" });
-            next();
-          } else {
-            this.bind("transitionend", () => {
-              mask && parent.removeChild(masker);
+          if (this.css("display") == "block" || this.css("display") == "flex") {
+            Effect(`out`);
+            if (Direction === "none") {
+              try {
+                mask && parent.removeChild(masker);
+              } catch (err) {}
               this.css({ display: "none" });
-              this.unbind("transitionend");
               next();
-            });
+            } else {
+              this.bind("transitionend", () => {
+                try {
+                  mask && parent.removeChild(masker);
+                } catch (err) {}
+                this.css({ display: "none" });
+                this.unbind("transitionend");
+                next();
+              });
+            }
+          } else {
+            next();
           }
           Confirm.btn && confirmBtn.unbind(`click`);
           Cancel.btn && cancelBtn.unbind(`click`);
@@ -1466,7 +1609,7 @@ const PandoraJs = SuperClass => {
 
       //进入和退出效果
       const Effect = where => {
-        if (mask) {
+        if (mask && where === "in") {
           parent.insertBefore(masker, this.get.nextElementSibling);
           new PandoraAPI(`.Pd-Mask`).css({ width: "100vw", height: "100vh", background: maskColor, position: "fixed", top: 0, left: 0, "z-index": 998 });
         }
@@ -1509,58 +1652,60 @@ const PandoraJs = SuperClass => {
         }
       };
 
+      //打开弹框
       const openDialog = param => {
-        new Promise(next => {
-          Effect(`in`);
-          next();
-        })
-          .then(() => {
-            return new Promise(next => {
-              const calcDialog = () => {
-                const top = parseInt(this.css(`height`)) / 2,
-                  left = parseInt(this.css(`width`)) / 2;
-                switch (Direction) {
-                  case "none":
-                    this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999 });
-                    break;
-                  case "top":
-                    this.css({ position: "fixed", top: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
-                    break;
-                  case "bottom":
-                    this.css({ position: "fixed", bottom: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
-                    break;
-                  case "zoom":
-                  default:
-                    this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
-                    break;
-                }
-              };
-              calcDialog();
-              window.onresize = () => {
-                this.transitionEnd(calcDialog);
-              };
-              next();
+        this.unbind("transitionend");
+        for (let a of window.pdDialogs) {
+          if (a != this) a.close();
+        }
+        Effect(`in`);
+
+        return new Promise(next => {
+          const calcDialog = () => {
+            const top = parseInt(this.css(`height`)) / 2,
+              left = parseInt(this.css(`width`)) / 2;
+            switch (Direction) {
+              case "none":
+                this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999 });
+                break;
+              case "top":
+                this.css({ position: "fixed", top: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                break;
+              case "bottom":
+                this.css({ position: "fixed", bottom: 0, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                break;
+              case "zoom":
+              default:
+                this.css({ position: "fixed", top: `calc(50% - ${top}px)`, left: `calc(50% - ${left}px)`, "z-index": 999, transform: "translate3d(0,0,0) scale(1)" });
+                break;
+            }
+          };
+          calcDialog();
+          window.onresize = () => {
+            this.bind("transitionend", calcDialog);
+          };
+
+          //遮罩被点击
+          if (mask && maskOut) masker.onclick = closeDialog;
+          const { close } = this;
+          //确认按钮被点击
+          Confirm.btn &&
+            confirmBtn.bind("click", () => {
+              Confirm.callback({ param: param || null, close });
             });
-          })
-          .then(() => {
-            //遮罩被点击
-            if (mask && maskOut) masker.onclick = closeDialog;
-            const { close } = this;
-            //确认按钮被点击
-            Confirm.btn &&
-              confirmBtn.bind("click", () => {
-                Confirm.callback({ param: param || null, close });
-              });
-            //取消按钮被点击
-            Cancel.btn &&
-              cancelBtn.bind("click", () => {
-                Cancel.callback({ param: param || null, close });
-              });
-          });
+          //取消按钮被点击
+          Cancel.btn &&
+            cancelBtn.bind("click", () => {
+              Cancel.callback({ param: param || null, close });
+            });
+          next();
+        });
       };
 
       this.close = closeDialog;
       this.open = openDialog;
+
+      window.pdDialogs.push(this);
       return this;
     }
     //图片预加载
@@ -1574,40 +1719,114 @@ const PandoraJs = SuperClass => {
         //加载完成(类型：方法)
         callback: null,
         //加载错误(类型：方法)
-        error() {
-          console.error(`[${Alphabet[8]} - ImgLoader] 资源加载错误！`);
+        error(err) {
+          console.error(`[${Alphabet[8]} - ImgLoader] 资源加载错误！\n${err}`);
           alert("资源加载错误！");
         },
       };
       config = this.extend(config, options);
-      const pattern = new RegExp('".*?"', "g"),
-        pattern2 = new RegExp(/'.*?'/, "g"),
-        pattern3 = new RegExp(/\(.*?\)/, "g"),
-        { lazy, loading, callback, error } = config;
+      const { lazy, loading, callback, error } = config;
       let ImgArr = [],
         total = 0,
         cur = 0,
         step = 0,
         floatNum = 0;
 
-      for (let e of this.get.querySelectorAll("*")) {
-        if (e.nodeName.toLowerCase() == "img") e.src && ImgArr.push(e.src);
-        const getBg = window.getComputedStyle(e).getPropertyValue(`background-image`);
-        if (getBg.indexOf(`url`) > -1 && getBg != "none" && getBg.indexOf(`data:`) < 0 && getBg.indexOf(`blob:`) < 0) {
-          const url1 = getBg.match(pattern),
-            url2 = getBg.match(pattern2),
-            url3 = getBg.match(pattern3);
+      // 类型检查
+      const typeCheck = str => {
+        if (str.indexOf(`url`) > -1 && str != "none" && str.indexOf(`data:`) < 0 && str.indexOf(`blob:`) < 0) {
+          return !0;
+        } else {
+          return !1;
+        }
+      };
 
-          if (url1) ImgArr.push(url1[0].toString().replace(/"/g, ""));
-          if (url2) ImgArr.push(url2[0].toString().replace(/'/g, ""));
-          if (url3) {
-            let src = url3[0].toString().replace(/\(/, "").replace(/\)/, "");
-            if (src.match(pattern)) src = src.match(pattern)[0].toString().replace(/"/g, "");
-            if (src.match(pattern2)) src = src.match(pattern2)[0].toString().replace(/'/g, "");
-            ImgArr.push(src);
+      // 仅容器内获取
+      const onlyContainer = ele => {
+        const pattern = new RegExp('".*?"', "g"),
+          pattern2 = new RegExp(/'.*?'/, "g"),
+          pattern3 = new RegExp(/\(.*?\)/, "g");
+
+        for (let e of ele.querySelectorAll("*")) {
+          if (e.nodeName.toLowerCase() == "img") e.src && ImgArr.push(e.src);
+          const getBg = window.getComputedStyle(e).getPropertyValue(`background-image`);
+          if (typeCheck(getBg)) {
+            const url1 = getBg.match(pattern),
+              url2 = getBg.match(pattern2),
+              url3 = getBg.match(pattern3);
+
+            url1 && ImgArr.push(url1[0].toString().replace(/"/g, ""));
+            url2 && ImgArr.push(url2[0].toString().replace(/'/g, ""));
+            if (url3) {
+              let src = url3[0].toString().replace(/\(/, "").replace(/\)/, "");
+              if (src.match(pattern)) src = src.match(pattern)[0].toString().replace(/"/g, "");
+              if (src.match(pattern2)) src = src.match(pattern2)[0].toString().replace(/'/g, "");
+              ImgArr.push(src);
+            }
           }
         }
-      }
+      };
+
+      // 全局获取
+      const allResources = () => {
+        const pattern1 = new RegExp(`background-image: url(.*?)*`, "g"),
+          pattern2 = new RegExp(`background: url(.*?)*`, "g");
+        let arr = [];
+
+        // 截取背景图
+        const getThat = (type, str) => {
+          let src;
+          switch (type) {
+            case 1:
+              src = str.split(`background-image: url(`)[1].split(`)`)[0];
+              break;
+            case 2:
+              src = str.split(`background: url(`)[1].split(`)`)[0];
+              break;
+          }
+          if (src.indexOf(`"`) > -1) return src.replace(/"/g, ``);
+          if (src.indexOf(`'`) > -1) return src.replace(/'/g, ``);
+          return src;
+        };
+
+        document.querySelectorAll("link").forEach(css => {
+          if (css.getAttribute("rel") == "stylesheet") {
+            this.ajax({
+              url: css.getAttribute("href"),
+              success(str) {
+                if (str.match(pattern1)) {
+                  for (let a of str.match(pattern1)) typeCheck(a) && arr.push(getThat(1, a));
+                }
+                if (str.match(pattern2)) {
+                  for (let a of str.match(pattern2)) typeCheck(a) && arr.push(getThat(2, a));
+                }
+              },
+            });
+          }
+        });
+
+        document.querySelectorAll("style").forEach(css => {
+          const str = css.innerText;
+          if (str.match(pattern1)) {
+            for (let a of str.match(pattern1)) typeCheck(a) && arr.push(getThat(1, a));
+          }
+          if (str.match(pattern2)) {
+            for (let a of str.match(pattern2)) typeCheck(a) && arr.push(getThat(2, a));
+          }
+        });
+
+        const bodyStr = document.body.innerHTML;
+        if (bodyStr.match(pattern1)) {
+          for (let a of bodyStr.match(pattern1)) typeCheck(a) && arr.push(getThat(1, a));
+        }
+        if (bodyStr.match(pattern2)) {
+          for (let a of bodyStr.match(pattern2)) typeCheck(a) && arr.push(getThat(2, a));
+        }
+        for (let e of document.querySelectorAll("img")) e.src && ImgArr.push(e.src);
+        ImgArr = arr;
+      };
+
+      this.get ? onlyContainer(this.get) : allResources();
       total = ImgArr.length;
 
       const loader = src => {
@@ -1630,16 +1849,15 @@ const PandoraJs = SuperClass => {
 
       //加载中
       let loadStepFrame;
-      Promise.all(ImgArr.map(e => loader(e))).catch(() => {
+      Promise.all(ImgArr.map(e => loader(e))).catch(err => {
         cancelAnimationFrame(loadStepFrame);
-        error();
+        error(err);
       });
 
       const loadStep = () => {
         step = Math.floor((cur / total) * 100);
         if (floatNum < 100) {
           if (floatNum < step) lazy ? floatNum++ : (floatNum = step);
-          this.attr("Pd-load", floatNum);
           loading && loading(floatNum);
           if (floatNum === 100) {
             cancelAnimationFrame(loadStepFrame);
@@ -1654,6 +1872,7 @@ const PandoraJs = SuperClass => {
         }
       };
       loadStep();
+
       return this;
     }
     //图片上传
@@ -1701,13 +1920,15 @@ const PandoraJs = SuperClass => {
         innerHtml = this.html(),
         { apiUrl, Format, type, Max, Quality, Clip, alwaysCover, Events, Uid } = config;
       this.empty();
-      this.get.insertAdjacentHTML("afterbegin", `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block;"></label>`);
+      this.get.insertAdjacentHTML("afterbegin", `<label for="Pd_imgUpload_${this.pid}" style="width:100%;height:100%;display:block"></label>`);
 
-      let uploadBtn = document.createElement(`input`),
-        userId,
-        total = Max,
-        current = 0,
-        steps = (current / total) * 100;
+      const uploadBtn = document.createElement(`input`);
+      let userId,
+        total = 0,
+        currentIndex = 0,
+        stepsTotal = 0,
+        stepsOnly = 0,
+        finalTotal = 0;
 
       if (Uid) {
         userId = Uid;
@@ -1750,16 +1971,27 @@ const PandoraJs = SuperClass => {
           dataType: "form",
           headers: null,
           data: formData,
-          progress: Events.progress,
+          progress(progress) {
+            if (total > 1) {
+              if (progress == 100) currentIndex++;
+              stepsTotal = Math.floor((currentIndex / total) * 100);
+              Events.progress(stepsTotal);
+            } else {
+              stepsOnly = progress;
+              Events.progress(stepsOnly);
+            }
+          },
           success(res) {
             that.usingTrack(`ImgUpload`);
             if (res) {
-              current++;
-              steps = (current / total) * 100;
-              uploadBtn.setAttribute("data-progress", steps);
-              if (steps === 100) {
+              if (total > 1) {
+                finalTotal = stepsTotal;
+              } else {
+                finalTotal = stepsOnly;
+              }
+              uploadBtn.setAttribute("data-progress", finalTotal);
+              if (finalTotal === 100) {
                 const data = { src: res.images };
-
                 uploadBtn.disabled = !1;
                 uploadBtn.value = "";
                 !Events.ready && window.hideLoading();
@@ -1782,8 +2014,9 @@ const PandoraJs = SuperClass => {
       //获取选择文件
       const selectedFile = Files => {
         const files = Array.prototype.slice.call(Files);
+        (total = 0), (currentIndex = 0), (stepsTotal = 0), (stepsOnly = 0), (finalTotal = 0);
+
         if (Max === 0 || files.length <= Max) {
-          current = 0;
           uploadBtn.disabled = !0;
           total = files.length;
 
@@ -1811,6 +2044,7 @@ const PandoraJs = SuperClass => {
         event.preventDefault();
         selectedFile(event.dataTransfer.files);
       });
+
       return this;
     }
     //图片移动缩放
@@ -1855,7 +2089,7 @@ const PandoraJs = SuperClass => {
         callback: null,
       };
       config = this.extend(config, options);
-      let that = this.get,
+      const that = this.get,
         btnAnimation = "transition:opacity .2s ease-in",
         imgs = that.querySelectorAll("img");
 
@@ -1938,9 +2172,10 @@ const PandoraJs = SuperClass => {
           e => {
             e.preventDefault();
             if (e.touches.length >= 2 && isTouch) {
-              let now = e.touches; //得到第二组两个点
-              let scale = getDistance(now[0], now[1]) / getDistance(start[0], start[1]); //得到缩放比例，getDistance是勾股定理的一个方法
-              let rotation = getAngle(now[0], now[1]) - getAngle(start[0], start[1]); //得到旋转角度，getAngle是得到夹角的一个方法
+              const now = e.touches, //得到第二组两个点
+                scale = getDistance(now[0], now[1]) / getDistance(start[0], start[1]), //得到缩放比例，getDistance是勾股定理的一个方法
+                rotation = getAngle(now[0], now[1]) - getAngle(start[0], start[1]); //得到旋转角度，getAngle是得到夹角的一个方法
+
               e.scale = scale.toFixed(2);
               e.rotation = rotation.toFixed(2);
               obj.gesturemove && obj.gesturemove.call(el, e); //执行gesturemove方法
@@ -1950,7 +2185,7 @@ const PandoraJs = SuperClass => {
         );
         document.addEventListener(
           "touchend",
-          e => {
+          () => {
             if (isTouch) {
               isTouch = !1;
               obj.gestureend && obj.gestureend.call(el); //执行gestureend方法
@@ -1977,7 +2212,7 @@ const PandoraJs = SuperClass => {
           startY = 0,
           prevScale = 100;
 
-        let eleReal = ele,
+        const eleReal = ele,
           eleConfig = { translate: `0,0,0`, scale: 100, rotate: 0 },
           w = eleReal.offsetWidth,
           h = eleReal.offsetHeight;
@@ -2006,20 +2241,20 @@ const PandoraJs = SuperClass => {
         //移动事件
         touchMove = event => {
           if (event.touches.length < 2 && event.target.className.indexOf("pd_child") < 0) {
-            let nowX = event.changedTouches[0].pageX,
+            const nowX = event.changedTouches[0].pageX,
               nowY = event.changedTouches[0].pageY,
               w = event.target.getBoundingClientRect().width,
               h = event.target.getBoundingClientRect().height,
               icon = event.target.parentElement.querySelectorAll(`.Pd-ImgTransit-btn`)[0].getBoundingClientRect(),
-              iconW = icon.width / 2;
-
-            touchX = nowX - startX;
-            touchY = nowY - startY;
-            let getBounding = event.target.parentElement.parentElement.getBoundingClientRect(),
+              iconW = icon.width / 2,
+              getBounding = event.target.parentElement.parentElement.getBoundingClientRect(),
               parentBox = {
                 width: config.bounds ? getBounding.width + config.outBounds : getBounding.width,
                 height: config.bounds ? getBounding.height + config.outBounds : getBounding.height,
               };
+
+            touchX = nowX - startX;
+            touchY = nowY - startY;
             if (config.bounds) {
               if (Math.abs(touchX) >= parentBox.width / 2 - w / 2 - iconW) {
                 if (touchX < 0) {
@@ -2148,20 +2383,12 @@ const PandoraJs = SuperClass => {
           event.target.zIndex = 1;
         }
       });
+
+      return this;
     }
     //微信SDK
     wxSDK(options) {
-      const that = this;
       this.usingTrack(`wxSDK`);
-      let sharePics,
-        hasIcon = !1;
-      document.querySelectorAll(`link`).forEach(tag => {
-        if (tag.getAttribute(`rel`) == "shortcut icon") {
-          sharePics = tag.href;
-          hasIcon = !0;
-        }
-      });
-
       let config = {
         //相关接口地址(类型：字符串)
         apiUrl: `https://wx.${Alphabet[3]}/wxshare.ashx?url=`,
@@ -2172,13 +2399,15 @@ const PandoraJs = SuperClass => {
         //分享描述(类型：字符串)
         desc: "Simple this",
         //分享图(类型：字符串或数组)
-        sharePics: sharePics || `https://${Alphabet[3]}/share_ico.jpg`,
+        shareIcon: `https://${Alphabet[3]}/share_ico.jpg`,
         //分享链接(类型：字符串或数组)
         shareLinks: window.location.href,
         //调试(类型：布尔)
         debug: !1,
         //微信jsApiList(类型：数组)
         jsApiList: null,
+        //开放标签列表(类型：数组)
+        openTagList: null,
         //回调方法
         callback: {
           //分享就绪(类型：方法)
@@ -2190,28 +2419,13 @@ const PandoraJs = SuperClass => {
         },
       };
       config = this.extend(config, options);
-      const scriptTag = document.createElement("script"),
-        { apiUrl, sdk, title, desc, shareLinks, debug, jsApiList, callback } = config;
+      const scriptTag = document.createElement("script");
+      let { apiUrl, sdk, title, desc, shareLinks, debug, jsApiList, openTagList, callback, shareIcon } = config;
       scriptTag.id = "Pd_share";
       scriptTag.src = `${sdk}?${new Date().getTime()}`;
-      if (this.getEle(`#Pd_share`)) new PandoraAPI(`#Pd_share`).remove();
+      new PandoraAPI(`#Pd_share`).get && new PandoraAPI(`#Pd_share`).remove();
       document.body.appendChild(scriptTag);
-
-      if (!hasIcon) {
-        const link = document.createElement(`link`);
-        link.rel = "shortcut icon";
-        link.href = sharePics;
-        link.type = "image/x-icon";
-        document.querySelector(`head`).appendChild(link);
-        console.warn(`[${Alphabet[9]}] 未检测到分享图将使用默认值！`);
-      }
-
-      let jsApiLists = ["onMenuShareTimeline", "onMenuShareAppMessage", "updateTimelineShareData", "updateAppMessageShareData"];
-      if (jsApiList) {
-        jsApiList.map(e => {
-          jsApiLists.push(e);
-        });
-      }
+      let hasIcon = !1;
 
       const isObj = con => {
         if (typeof con === "object") {
@@ -2221,21 +2435,49 @@ const PandoraJs = SuperClass => {
         }
       };
 
+      document.querySelectorAll(`link`).forEach(tag => {
+        if (tag.getAttribute(`rel`) == "shortcut icon") {
+          hasIcon = !0;
+          shareIcon = tag.href;
+        }
+      });
+
+      if (hasIcon) {
+        const link = document.createElement(`link`);
+        link.rel = "shortcut icon";
+        link.href = isObj(shareIcon) ? shareIcon[0] : shareIcon;
+        link.type = "image/x-icon";
+        document.querySelector(`head`).appendChild(link);
+      }
+
+      let jsApiLists = ["onMenuShareTimeline", "onMenuShareAppMessage", "updateTimelineShareData", "updateAppMessageShareData"];
+      let openTagLists = ["wx-open-launch-app"];
+      if (jsApiList) {
+        jsApiList.map(e => {
+          jsApiLists.push(e);
+        });
+      }
+      if (openTagList) {
+        openTagList.map(e => {
+          openTagLists.push(e);
+        });
+      }
+
       const timeLine = {
           title: isObj(title) ? title[0] : title,
           link: isObj(shareLinks) ? shareLinks[0] : shareLinks,
-          imgUrl: isObj(config.sharePics) ? config.sharePics[0] : config.sharePics,
+          imgUrl: isObj(shareIcon) ? shareIcon[0] : shareIcon,
         },
         friend = {
           title: isObj(title) ? title[1] : title,
           link: isObj(shareLinks) ? shareLinks[1] : shareLinks,
-          imgUrl: isObj(config.sharePics) ? config.sharePics[1] : config.sharePics,
+          imgUrl: isObj(shareIcon) ? shareIcon[1] : shareIcon,
           desc,
         };
 
       const success = res => {
         const { appId, timestamp, nonceStr, signature } = res;
-        wx.config({ debug, appId, timestamp, nonceStr, signature, jsApiList: jsApiLists });
+        wx.config({ debug, appId, timestamp, nonceStr, signature, jsApiList: jsApiLists, openTagList: openTagLists });
         wx.ready(() => {
           new Promise(next => {
             if (wx.onMenuShareTimeline) {
@@ -2262,8 +2504,9 @@ const PandoraJs = SuperClass => {
       };
 
       scriptTag.onload = () => {
-        that.ajax({ url: `${apiUrl}${encodeURIComponent(window.location.href.split(`#`)[0])}`, success });
+        this.ajax({ url: `${apiUrl}${encodeURIComponent(window.location.href.split(`#`)[0])}`, success });
       };
+
       return this;
     }
     //懒加载
@@ -2338,23 +2581,24 @@ const PandoraJs = SuperClass => {
       //页面滚动事件
       window.addEventListener("scroll", checker);
       checker();
+
+      return this;
     }
   };
 };
 
 const Pandora = class extends PandoraJs(PandoraAPI) {
-  constructor(element) {
-    super(element);
+  constructor(obj = null) {
+    super(obj);
   }
 };
 
 window.Pandora = Pandora;
-
 try {
   jQuery;
   console.warn(`[${Alphabet[9]}] 检测到JQuery,请改用 new Pandora()`);
 } catch (err) {
-  window.$ = element => {
-    return new Pandora(element);
+  window.$ = obj => {
+    return new Pandora(obj);
   };
 }
