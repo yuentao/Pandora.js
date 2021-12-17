@@ -1,6 +1,7 @@
 const path = require("path");
 
 module.exports = {
+  mode: "development",
   watch: true,
   watchOptions: {
     poll: 1000, // 每秒询问多少次

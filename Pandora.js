@@ -4,6 +4,7 @@
 // require("core-js/es6/symbol");
 // require("core-js/es6/array");
 // require("core-js/es6/string");
+const OSSBase64 = require("./src/base64.js");
 const icoConfig = require("./src/icoConfig.json");
 // 缺省字段
 const Alphabet = ["active", "local", "localhost", "pandorajs.com", "127.0.0.1", "192.168", "inherit", "提示", "错误", "警告"];
@@ -12,6 +13,15 @@ const Alphabet = ["active", "local", "localhost", "pandorajs.com", "127.0.0.1", 
 // 启用插件追踪
 window.enableTrack = !0;
 window.pdDialogs = [];
+if (window.resetAlert == undefined) {
+  window.resetAlert = !0;
+}
+if (window.resetConfirm == undefined) {
+  window.resetConfirm = !0;
+}
+
+let isCooling = false;
+let trackCooler;
 
 // 是否符合追踪条件
 const canTrack = () => {
@@ -80,167 +90,187 @@ const setGlobalCSS = (mask, maskBg, blur, plan) => {
 
   if (maskBg) plan.style.cssText += `background:rgba(255,255,255,.66)`;
 };
+
 //修改原生alert
-window.alert = content => {
-  let timeout,
-    mask = document.createElement(`div`),
-    maskBg = !isMaskShow ? getRoot(`alertBg`) : null,
-    div = document.createElement(`div`),
-    msg = document.createElement(`p`),
-    blur = document.createElement(`div`),
-    plan = document.createElement(`div`),
-    Theme = getRoot(`alertTheme`),
-    fontSize = getRoot(`alertFontSize`),
-    color = getRoot(`alertColor`);
+if (window.resetAlert) {
+  window.alert = (content, speed = 800) => {
+    let timeout,
+      mask = document.createElement(`div`),
+      maskBg = !isMaskShow ? getRoot(`alertBg`) : null,
+      div = document.createElement(`div`),
+      msg = document.createElement(`p`),
+      blur = document.createElement(`div`),
+      plan = document.createElement(`div`),
+      Theme = getRoot(`alertTheme`),
+      fontSize = getRoot(`alertFontSize`),
+      color = getRoot(`alertColor`);
 
-  setGlobalCSS(mask, maskBg, blur, plan);
-  mask.style.cssText += `align-items:flex-end`;
-  div.style.cssText = `
-      background:${Alphabet[6]};
-      background:${Theme};
-      text-align:center;
-      color:${color};
-      font-size:${fontSize};
-      padding:1em 2em;
-      line-height:1.5;
-      transition:opacity .4s ease-out;
-      margin-bottom:5vh;
-      box-shadow:0 8px 16px rgba(0,0,0,.25);
-      border:1px solid rgba(0,0,0,.1);
-      border-radius:6px;
-      position:relative;
-      overflow:hidden`;
-  msg.style.cssText = `margin:0;position:relative`;
+    setGlobalCSS(mask, maskBg, blur, plan);
+    mask.style.cssText += `align-items:flex-end`;
+    div.style.cssText = `
+        background:${Alphabet[6]};
+        background:${Theme};
+        text-align:center;
+        color:${color};
+        font-size:${fontSize};
+        padding:1em 2em;
+        line-height:1.5;
+        transition:opacity .4s ease-out;
+        margin-bottom:5vh;
+        box-shadow:0 8px 16px rgba(0,0,0,.25);
+        border:1px solid rgba(0,0,0,.1);
+        border-radius:6px;
+        position:relative;
+        overflow:hidden`;
+    div.className = "Pd_alert";
+    msg.style.cssText = `margin:0;position:relative`;
 
-  msg.innerText = content ? content.toString() : "";
-  div.appendChild(blur);
-  div.appendChild(plan);
-  div.appendChild(msg);
-  mask.appendChild(div);
-  document.body.appendChild(mask);
-
-  mask.onclick = () => {
-    clearTimeout(timeout);
-    document.body.removeChild(mask);
-    mask = div = timeout = color = null;
-  };
-
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    div.style.opacity = "0";
-    div.addEventListener("transitionend", () => {
-      document.body.removeChild(mask);
-      mask = div = timeout = color = null;
-    });
-  }, 800);
-};
-//修改原生confirm
-window.confirm = config => {
-  let content,
-    confirmText,
-    cancelText,
-    success,
-    fail,
-    mask = document.createElement(`div`),
-    div = document.createElement(`div`),
-    blur = document.createElement(`div`),
-    plan = document.createElement(`div`),
-    msg = document.createElement(`p`),
-    confirm = document.createElement(`button`),
-    cancel = document.createElement(`button`),
-    maskBg = !isMaskShow ? getRoot(`confirmBg`) : null,
-    btnBg = getRoot(`confirmBtnBg`),
-    Theme = getRoot(`confirmTheme`),
-    fontSize = getRoot(`confirmFontSize`),
-    color = getRoot(`confirmColor`),
-    btnColor = getRoot(`confirmBtnColor`);
-  const showConfirm = config.showConfirm == undefined ? !0 : config.showConfirm,
-    showCancel = config.showCancel == undefined ? !0 : config.showCancel;
-
-  setGlobalCSS(mask, maskBg, blur, plan);
-  mask.style.cssText += "align-items: center;";
-  div.style.cssText = `
-      background:${Alphabet[6]};
-      background:${Theme};
-      text-align:center;
-      color:${color};
-      font-size:${fontSize};
-      padding:1.5em;
-      max-width:75vw;
-      box-shadow:0 8px 16px rgba(0,0,0,.25);
-      border:1px solid rgba(0,0,0,.1);
-      border-radius:6px;
-      position:relative;
-      overflow:hidden`;
-
-  msg.style.cssText = `margin:0;position:relative;line-height:2`;
-  const buttonCSS = `position:relative;margin:2.5em 1em 0 1em;font-size:.8em;appearance:none;background:${btnBg};color:${btnColor};border:none;padding:1em 3em;cursor:pointer;outline:none`;
-  confirm.style.cssText = cancel.style.cssText = buttonCSS;
-
-  const removeConfirm = () => {
-    document.body.removeChild(mask);
-    isMaskShow = !1;
-  };
-
-  const createModel = () => {
     msg.innerText = content ? content.toString() : "";
     div.appendChild(blur);
     div.appendChild(plan);
     div.appendChild(msg);
-
-    if (showConfirm) {
-      confirm.innerText = confirmText ? confirmText.toString() : "确认";
-      div.appendChild(confirm);
-    }
-    if (showCancel) {
-      cancel.innerText = cancelText ? cancelText.toString() : "取消";
-      div.appendChild(cancel);
-    }
-
     mask.appendChild(div);
     document.body.appendChild(mask);
-    isMaskShow = !0;
+
+    mask.onclick = () => {
+      clearTimeout(timeout);
+      document.body.removeChild(mask);
+      mask = div = timeout = color = null;
+    };
+
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      div.style.opacity = "0";
+      div.addEventListener("transitionend", () => {
+        document.body.removeChild(mask);
+        mask = div = timeout = color = null;
+      });
+    }, speed);
   };
+}
 
-  if (!config.content) {
-    content = config.toString();
-  } else {
-    content = config.content;
-    confirmText = config.confirmText;
-    cancelText = config.cancelText;
-    success = config.success;
-    fail = config.fail;
-  }
-  createModel();
+//修改原生confirm
+if (window.resetConfirm) {
+  window.confirm = config => {
+    let content,
+      confirmText,
+      cancelText,
+      success,
+      fail,
+      mask = document.createElement(`div`),
+      div = document.createElement(`div`),
+      blur = document.createElement(`div`),
+      plan = document.createElement(`div`),
+      msg = document.createElement(`p`),
+      confirm = document.createElement(`button`),
+      cancel = document.createElement(`button`),
+      maskBg = !isMaskShow ? getRoot(`confirmBg`) : null,
+      btnBg = getRoot(`confirmBtnBg`),
+      Theme = getRoot(`confirmTheme`),
+      fontSize = getRoot(`confirmFontSize`),
+      color = getRoot(`confirmColor`),
+      btnColor = getRoot(`confirmBtnColor`);
+    const showConfirm = config.showConfirm == undefined ? !0 : config.showConfirm,
+      showCancel = config.showCancel == undefined ? !0 : config.showCancel;
 
-  return new Promise((ok, no) => {
-    if (showConfirm) {
-      confirm.onclick = () => {
-        removeConfirm();
-        success ? success() : ok();
-      };
+    setGlobalCSS(mask, maskBg, blur, plan);
+    mask.style.cssText += "align-items: center;";
+    div.style.cssText = `
+        background:${Alphabet[6]};
+        background:${Theme};
+        text-align:center;
+        color:${color};
+        font-size:${fontSize};
+        padding:1.5em;
+        max-width:75vw;
+        box-shadow:0 8px 16px rgba(0,0,0,.25);
+        border:1px solid rgba(0,0,0,.1);
+        border-radius:6px;
+        position:relative;
+        overflow:hidden`;
+    div.className = "Pd_confirm";
+
+    msg.style.cssText = `margin:0;position:relative;line-height:2`;
+    const buttonCSS = `position:relative;margin:2.5em 1em 0 1em;font-size:.8em;appearance:none;background:${btnBg};color:${btnColor};border:none;padding:1em 3em;cursor:pointer;outline:none`;
+    confirm.style.cssText = cancel.style.cssText = buttonCSS;
+
+    const removeConfirm = () => {
+      document.body.removeChild(mask);
+      isMaskShow = !1;
+    };
+
+    const createModel = () => {
+      msg.innerText = content ? content.toString() : "";
+      div.appendChild(blur);
+      div.appendChild(plan);
+      div.appendChild(msg);
+
+      if (showConfirm) {
+        confirm.innerText = confirmText ? confirmText.toString() : "确认";
+        div.appendChild(confirm);
+      }
+      if (showCancel) {
+        cancel.innerText = cancelText ? cancelText.toString() : "取消";
+        div.appendChild(cancel);
+      }
+
+      mask.appendChild(div);
+      document.body.appendChild(mask);
+      isMaskShow = !0;
+    };
+
+    if (!config.content) {
+      content = config.toString();
+    } else {
+      content = config.content;
+      confirmText = config.confirmText;
+      cancelText = config.cancelText;
+      success = config.success;
+      fail = config.fail;
     }
+    createModel();
 
-    if (showCancel) {
-      cancel.onclick = () => {
-        removeConfirm();
-        fail ? fail() : no();
-      };
-    }
-  });
-};
+    return new Promise((ok, no) => {
+      if (showConfirm) {
+        confirm.onclick = () => {
+          removeConfirm();
+          success ? success() : ok();
+        };
+      }
+
+      if (showCancel) {
+        cancel.onclick = () => {
+          removeConfirm();
+          fail ? fail() : no();
+        };
+      }
+    });
+  };
+}
+
 //loading遮罩
 const LoadingName = "Pd_loader";
-window.showLoading = () => {
+window.showLoading = (progress = null) => {
   const mask = document.createElement("div"),
-    svg = new Image();
+    svg = new Image(),
+    em = document.createElement("em");
 
   svg.src = icoConfig.load;
   mask.id = `${LoadingName}`;
-  mask.style.cssText = "width:100%;height:100%;position:fixed;z-index:999;top:0;left:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center";
+  mask.style.cssText = "font-size:18px;width:100%;height:100%;position:fixed;z-index:999;top:0;left:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;flex-direction:column";
 
   document.querySelector(`#${LoadingName}`) && document.body.removeChild(document.querySelector(`#${LoadingName}`));
+  svg.style.width = svg.style.height = "3em";
   mask.appendChild(svg);
+
+  if (progress !== null) {
+    em.style.fontStyle = "normal";
+    em.style.color = "#fff";
+    em.style.marginTop = ".5em";
+    em.style.fontSize = "1em";
+    em.innerText = progress;
+    mask.appendChild(em);
+  }
   document.body.appendChild(mask);
 };
 window.hideLoading = () => {
@@ -769,7 +799,7 @@ class PandoraAPI {
         url: null,
         //请求类型(类型：字符串；可选参数：post、get)
         type: "get",
-        //是否同步请求(类型：布尔)
+        //是否异步请求(类型：布尔)
         async: !1,
         //设置请求头(类型：对象)
         headers: { "Content-type": "application/x-www-form-urlencoded" },
@@ -800,7 +830,7 @@ class PandoraAPI {
       }
 
       http.onload = err => {
-        if (http.status === 200 || http.statusText === "OK" || http.readyState === 4) {
+        if (http.status === 200 || http.statusText === "OK") {
           const res = http.response;
           try {
             JSON.parse(res);
@@ -814,7 +844,6 @@ class PandoraAPI {
         }
       };
 
-      http.onerror = error;
       http.open(type.toUpperCase(), url, async);
       http.upload.onprogress = event => {
         if (event.lengthComputable) {
@@ -836,18 +865,22 @@ class PandoraAPI {
         type: "get",
         //发送数据(类型：JSON)
         data: null,
+        //返回数据格式化(类型：方法)
+        returnData(res) {
+          return res.json();
+        },
         //成功回调方法(类型：方法；返回类型：对象)
         success: null,
         //失败回调方法(类型：方法)
         error: null,
       };
       config = this.extend(config, options);
-      const { url, data, headers, type, success, error } = config;
+      const { url, data, headers, type, success, error, returnData } = config;
 
-      fetch(url, { body: data, headers, method: type.toLocaleUpperCase() })
+      fetch(url, { body: data ? JSON.stringify(data) : null, headers, method: type.toLocaleUpperCase() })
         .then(res => {
           if (res.ok) {
-            return res.json();
+            return returnData(res);
           } else {
             console.error(`[${Alphabet[8]}] 请求错误！\n${res}`);
           }
@@ -885,7 +918,21 @@ class PandoraAPI {
     this.usingTrack = fnName => {
       const form = navigator.userAgent,
         domain = window.location.href;
-      canTrack() && this.fetch({ url: `https://api.${Alphabet[3]}/Pd_track?usageFunction=${fnName}&usagePlatform=${form}&usageDomain=${domain}` });
+      if (canTrack()) {
+        if (!isCooling) {
+          this.fetch({
+            url: `https://api.${Alphabet[3]}/Pd_track?usageFunction=${fnName}&usagePlatform=${form}&usageDomain=${domain}`,
+            success() {
+              isCooling = !0;
+            },
+          });
+        } else {
+          clearTimeout(trackCooler);
+          trackCooler = setTimeout(() => {
+            isCooling = !1;
+          }, 1000);
+        }
+      }
     };
     //全局变量
     this.globalData = {};
@@ -905,6 +952,7 @@ class PandoraAPI {
     };
     //模板渲染
     this.template = (route, container) => {
+      // templatePolyfill();
       return new Promise((success, fail) => {
         const temp = (() => {
           let cur;
@@ -917,10 +965,48 @@ class PandoraAPI {
 
         if (temp) {
           this.empty();
-          container.appendChild(document.importNode(temp.content, !0));
-          success();
+          let url = temp.getAttribute("src");
+          const that = this;
+          if (url) {
+            that.fetch({
+              url,
+              headers: { "Content-type": "text/html" },
+              returnData(res) {
+                return res.text();
+              },
+              success(res) {
+                const node = document.createElement(`template`);
+                node.innerHTML = res;
+                container.appendChild(document.importNode(node.content, !0));
+                for (let script of node.content.querySelectorAll(`script`)) {
+                  if (script.getAttribute("src")) {
+                    that.fetch({
+                      url: script.src,
+                      headers: { "Content-type": "text/html" },
+                      returnData(res) {
+                        return res.text();
+                      },
+                      success(res) {
+                        eval(res);
+                      },
+                    });
+                  } else {
+                    eval(script.innerHTML);
+                  }
+                }
+                success();
+              },
+              error(err) {
+                console.error(`[${Alphabet[8]}] 不存在以下路由：${err.target.responseURL}`);
+                fail(`${route}`);
+              },
+            });
+          } else {
+            container.appendChild(document.importNode(temp.content, !0));
+            success();
+          }
         } else {
-          console.error(`[${Alphabet[8]}] 不存在以下路由：${route}！`);
+          console.error(`[${Alphabet[8]}] 不存在以下路由：${route}`);
           fail(`${route}`);
         }
       });
@@ -944,15 +1030,15 @@ class PandoraAPI {
       }
     };
     // HASH改变
-    this.hashChange = callback => {
+    this.hashChange = (callback, routes) => {
       const getRoutePath = () => {
         if (location.hash.indexOf(`#`) > -1) {
-          return location.hash.match(/#(\S*)\?/) == null ? location.hash.match(/#(\S*)/)[1] : location.hash.match(/#(\S*)\?/)[1];
+          return location.hash.match(/#(\S*)\?/) === null ? location.hash.match(/#(\S*)/).input.replace(`#`, ``) : location.hash.match(/#(\S*)\?/).input.replace(`#`, ``);
         } else {
           return !1;
         }
       };
-      const routePath = getRoutePath() || "/";
+      const routePath = getRoutePath() || routes[0].path;
       callback(routePath);
     };
     // TODO数组相关方法
@@ -970,7 +1056,7 @@ class PandoraAPI {
       },
       // 判断是否存在重复
       hasRepeat() {
-        let originals = this.originals;
+        const originals = this.originals;
         let hash = {};
         for (let i in originals) {
           if (hash[originals[i]]) {
@@ -979,6 +1065,13 @@ class PandoraAPI {
           hash[originals[i]] = !0;
         }
         return !1;
+      },
+      // 数组求和
+      Sum() {
+        const arr = this.originals;
+        let s = 0;
+        for (let i = arr.length - 1; i >= 0; i--) s += arr[i];
+        return s;
       },
     };
   }
@@ -1083,31 +1176,41 @@ const PandoraJs = SuperClass => {
       const eachRoutes = path => {
         return new Promise((success, fail) => {
           if (path) {
-            if (JSON.stringify(routes).indexOf(path) < 0) {
-              fail(`[${Alphabet[8]} - Router] ${path} 不存在于routes！`);
+            if (JSON.stringify(routes).indexOf(path.split("?")[0]) < 0) {
+              fail(`[${Alphabet[8]} - Router] ${path.split("?")[0]} 不存在于routes！`);
             } else {
               routes.forEach(e => {
-                if (path == e.path) {
+                if (path.split("?")[0] == e.path) {
                   that
-                    .template(path, that.get)
+                    .template(path.split("?")[0], that.get)
                     .then(() => {
                       const query = that.getParams();
                       window.location.href = `#${path}`;
-                      e.callback && e.callback(query);
                       success();
+
+                      try {
+                        e.callback && e.callback(query);
+                      } catch (err) {
+                        e.error && e.error(err);
+                        console.error(`[${Alphabet[8]} - Router] ${err}`);
+                      }
+
                       window.onhashchange = null;
                       setTimeout(() => {
                         window.onhashchange = () => {
-                          that.hashChange(eachRoutes);
+                          that.hashChange(eachRoutes, routes);
                         };
                       }, 50);
                     })
                     .catch(err => {
                       e.error && e.error(err);
+                      console.error(`[${Alphabet[8]} - Router] ${err}`);
                     });
                 }
               });
             }
+          } else {
+            console.error(`[${Alphabet[8]} - Router] 不存在任何路由！`);
           }
         });
       };
@@ -1116,10 +1219,12 @@ const PandoraJs = SuperClass => {
       this.navigateTo = path => {
         if (path.indexOf(`?`) > -1) {
           setTimeout(() => {
-            location.href = `#${path}`;
-          }, 50);
+            window.location.href = `#${path}`;
+          }, 0);
         } else {
-          eachRoutes(path);
+          setTimeout(() => {
+            eachRoutes(path);
+          });
         }
       };
       routes ? eachRoutes(routes[0].path) : console.error(`[${Alphabet[8]} - Router] 不存在任何路由！`);
@@ -1156,9 +1261,11 @@ const PandoraJs = SuperClass => {
         Loop: !1,
         //切换状态变化(类型：方法)
         onChange: null,
+        //是否窗口大小改变时自动调整(类型：布尔)
+        AutoResize: !1,
       };
       config = this.extend(config, options);
-      const { Speed, Curve, Effect, Direction, Inertia, Distance, AutoSpeed, Pagination, Hover, Scroll, InitPage, Loop, onChange } = config,
+      const { Speed, Curve, Effect, Direction, Inertia, Distance, AutoSpeed, Pagination, Hover, Scroll, InitPage, Loop, onChange, AutoResize } = config,
         childEle = this.get,
         parentEle = childEle[0].parentElement,
         childW = childEle[0].offsetWidth,
@@ -1176,7 +1283,7 @@ const PandoraJs = SuperClass => {
 
       //切换
       const Swiper = (moveTo = null) => {
-        moveTo && (cur = moveTo);
+        if (typeof moveTo == "number") cur = moveTo;
         Pager(cur);
         onChange && onChange(cur);
         switch (Effect) {
@@ -1268,7 +1375,7 @@ const PandoraJs = SuperClass => {
       let startX, startY, endX, endY, curX, curY;
       //方法：滑动开始
       const touchStart = event => {
-        if (event.target.getAttribute(`switch-cancel`) || event.target.tagName.toUpperCase() == "A") return !1;
+        if (event.target.getAttribute(`switch-cancel`)) return !1;
         clearTimeout(AutoTimeout);
         cancelAnimationFrame(AutoPlayFrame);
         const { pageX, pageY } = event.changedTouches[0];
@@ -1288,7 +1395,7 @@ const PandoraJs = SuperClass => {
 
       //方法：滑动中
       const touchMove = event => {
-        if (event.target.getAttribute(`switch-cancel`) || event.target.tagName.toUpperCase() == "A") return !1;
+        if (event.target.getAttribute(`switch-cancel`)) return !1;
         const { pageX, pageY } = event.changedTouches[0],
           { left, top } = parentEle.parentElement.getBoundingClientRect();
         curX = pageX - left;
@@ -1322,7 +1429,7 @@ const PandoraJs = SuperClass => {
 
       //方法：滑动结束
       const touchEnd = event => {
-        if (event.target.getAttribute(`switch-cancel`) || event.target.tagName.toUpperCase() == "A") return !1;
+        if (event.target.getAttribute(`switch-cancel`)) return !1;
         clearTimeout(AutoTimeout);
         AutoPlay();
         parentEle.style.transition = `transform ${Speed}s ${Curve}`;
@@ -1411,7 +1518,7 @@ const PandoraJs = SuperClass => {
 
       //初始化
       const Init = () => {
-        const { offsetWidth, offsetHeight } = childEle[0];
+        const { width, height } = parentEle.parentElement.getBoundingClientRect();
         cur = InitPage;
 
         new Promise(next => {
@@ -1425,18 +1532,19 @@ const PandoraJs = SuperClass => {
             default:
               switch (Direction) {
                 case "vertical":
-                  parentEle.style.width = `${offsetWidth}px`;
-                  parentEle.style.height = `${offsetHeight * total}px`;
+                  parentEle.style.width = `${width}px`;
+                  parentEle.style.height = `${height * total}px`;
                   parentEle.style.flexDirection = "column";
+                  parentEle.style.cssText += "touch-action: pan-x";
                   break;
                 case "horizontal":
                 default:
-                  parentEle.style.width = `${offsetWidth * total}px`;
-                  parentEle.style.height = `${offsetHeight}px`;
+                  parentEle.style.width = `${width * total}px`;
+                  parentEle.style.height = `${height}px`;
                   parentEle.style.flexDirection = "row";
+                  parentEle.style.cssText += "touch-action: pan-y";
                   break;
               }
-              parentEle.style.cssText += "touch-action: none";
               parentEle.style.display = "flex";
               parentEle.style.transition = `transform ${Speed}s ${Curve}`;
               break;
@@ -1474,14 +1582,20 @@ const PandoraJs = SuperClass => {
       this.prev = Prev;
       this.next = Next;
       this.direct = Swiper;
+      this.destroy = () => {
+        Inertia && parentEle.removeEventListener("touchmove", touchMove);
+        Scroll && parentEle.removeEventListener("mousewheel", scrollMove);
+        parentEle.removeEventListener("touchstart", touchStart);
+        parentEle.removeEventListener("touchend", touchEnd);
+        clearTimeout(AutoTimeout);
+        cancelAnimationFrame(AutoPlayFrame);
+      };
 
       Init();
-      let req;
-      window.addEventListener("resize", () => {
-        clearTimeout(req);
-        req = setTimeout(Init, 200);
-      });
 
+      if (AutoResize) {
+        window.onresize = Init;
+      }
       return this;
     }
     //字体自适应
@@ -1506,6 +1620,9 @@ const PandoraJs = SuperClass => {
         meta.setAttribute("content", `width=${PageSize},initial-scale=${InitScale},minimum-scale=${MinScale},maximum-scale=${MaxScale},user-scalable=no,viewport-fit=cover`);
       } else {
         meta.setAttribute("content", `width=${PageSize},user-scalable=no,viewport-fit=cover`);
+      }
+      for (let tag of document.getElementsByTagName("meta")) {
+        if (tag.name == "viewport") tag.parentElement.removeChild(tag);
       }
       new PandoraAPI(`head`).get.appendChild(meta);
 
@@ -2582,6 +2699,134 @@ const PandoraJs = SuperClass => {
       window.addEventListener("scroll", checker);
       checker();
 
+      return this;
+    }
+    //TODO 上传OSS
+    OSSupload(options) {
+      this.usingTrack("OSSupload");
+      let config = {
+        // 阿里云账号AccessId(类型：字符串)
+        AccessId: null,
+        // 阿里云账号AccessKey(类型：字符串)
+        AccessKey: null,
+        // OSS Bucket 外网域名(类型：字符串)
+        Endpoint: null,
+        // 失效时间(类型：字符串；单位：小时)
+        invalidTime: 3,
+        // 文件大小限制(类型：整数；单位：MB)
+        maxSize: 2,
+      };
+      config = this.extend(config, options);
+      const that = this;
+      const { AccessId, AccessKey, Endpoint, invalidTime, maxSize } = config;
+
+      // 引用检测
+      try {
+        Crypto;
+      } catch (err) {
+        return console.error(`[${Alphabet[8]}] 缺少Crypto工具方法`);
+      }
+      if (!Crypto.HMAC) return console.error(`[${Alphabet[8]}] 缺少Crypto工具的HMAC方法`);
+      if (!Crypto.SHA1) return console.error(`[${Alphabet[8]}] 缺少Crypto工具的SHA1方法`);
+
+      // 配置检测
+      if (!AccessId) return console.error(`[${Alphabet[8]}] 缺失阿里云账号AccessId`);
+      if (!AccessKey) return console.error(`[${Alphabet[8]}] 缺失阿里云账号AccessKey`);
+      if (!Endpoint) return console.error(`[${Alphabet[8]}] 缺失OSS Bucket 外网域名`);
+
+      // 自动补零
+      const padThat = str => {
+        return str.toString().padStart(2, 0);
+      };
+
+      // 客户端签名
+      const policyText = {
+        // 获取失效时间
+        expiration: (function () {
+          let date;
+          const Year = new Date().getFullYear(),
+            Month = new Date().getMonth() + 1,
+            Day = new Date().getDate(),
+            Hours = new Date().getHours();
+          if (Hours + invalidTime >= 24) {
+            date = `${Year}-${padThat(Month)}-${padThat(Day)}T${padThat(Hours + invalidTime - 24)}:00:00.000Z`;
+          } else {
+            date = `${Year}-${padThat(Month)}-${padThat(Day)}T${padThat(Hours)}:00:00.000Z`;
+          }
+          return date;
+        })(),
+        conditions: [
+          ["content-length-range", 0, maxSize * 1024 * 1024], // 设置上传文件的大小限制
+        ],
+      };
+
+      // 获取拓展名
+      const getSuffix = filename => {
+        return filename.substring(filename.lastIndexOf("."));
+      };
+
+      // 上传文件
+      const uploadFile = (fileObj, fileName = null, dirName = "", progress = null) => {
+        const policyBase64 = OSSBase64.encode(JSON.stringify(policyText)),
+          bytes = Crypto.HMAC(Crypto.SHA1, policyBase64, AccessKey, { asBytes: true }),
+          signature = Crypto.util.bytesToBase64(bytes);
+        if (!fileName) {
+          fileName = that.guid();
+        }
+
+        return new Promise((resolve, reject) => {
+          if (fileObj) {
+            if (fileObj.size > maxSize * 1024 * 1024) {
+              reject("overSize");
+              return console.error(`[${Alphabet[8]}] 文件大小超出最大限制`);
+            } else {
+              const formData = new FormData();
+              formData.append("name", `${fileName}${getSuffix(fileObj.name)}`);
+              const copyFile = new File([fileObj], `${fileName}${getSuffix(fileObj.name)}`, { type: fileObj.type });
+              fileObj = copyFile;
+              formData.append("key", dirName ? `${dirName}/\${filename\}` : "${filename}");
+              formData.append("policy", policyBase64);
+              formData.append("OSSAccessKeyId", AccessId);
+              formData.append("success_action_status", "200");
+              formData.append("signature", signature);
+              formData.append("file", fileObj);
+
+              that.ajax({
+                url: Endpoint,
+                type: "post",
+                headers: null,
+                async: true,
+                dataType: "form",
+                data: formData,
+                success() {
+                  resolve({
+                    code: 200,
+                    msg: "上传成功",
+                    url: (function () {
+                      let url;
+                      if (dirName != "") {
+                        url = `${Endpoint}/${dirName}/${fileObj.name}`;
+                      } else {
+                        url = `${Endpoint}/${fileObj.name}`;
+                      }
+                      return url;
+                    })(),
+                  });
+                },
+                progress,
+                error(err) {
+                  reject(err);
+                },
+              });
+            }
+          } else {
+            reject("noFile");
+            return console.warn(`[${Alphabet[9]}] 请选择需要上传的文件`);
+          }
+        });
+      };
+
+      this.start = uploadFile;
       return this;
     }
   };
