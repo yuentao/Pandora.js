@@ -5,12 +5,19 @@
 ## 基础方法
 
 ```javascript
+//提示框
 window.alert(`文本内容`);
+//确认框
+window.confirm(`文本内容`).then(确认回调).catch(取消回调);
 window.confirm({
   //文本内容(类型：字符串)
   content: `提示内容`,
+  //是否显示确认按钮(类型：布尔)
+  showConfirm:true,
   //确认按钮文本(类型：字符串)
   confirmText: `确认`,
+  //是否显示取消按钮(类型：布尔)
+  showCancel:true,
   //取消按钮文本(类型：字符串)
   cancelText: `取消`,
   //点击确定(类型：方法)
@@ -21,7 +28,10 @@ window.confirm({
 ```
 
 ```javascript
+//显示加载蒙层
 window.showLoading();
+window.showLoading(`可传入数字作为进度显示`);
+//隐藏加载蒙层
 window.hideLoading();
 ```
 
@@ -35,25 +45,29 @@ window.hideLoading();
 $(`元素`).get;
 //遍历元素
 $(`元素`).each((current, index) => {});
+//选择父级元素
+$(`元素`).parent();
 //选择子级元素
 $(`元素`).child(`p`);
 //选择指定下标元素
 $(`元素`).eq(0);
 //选择其他同级元素
-$(`元素`).siblings("元素");
+$(`元素`).siblings(`元素`);
 //选择上一个同级元素
 $(`元素`).prev();
 //选择下一个同级元素
 $(`元素`).next();
+//选择第一个同级元素
+$(`元素`).first();
+//选择最后一个同级元素
+$(`元素`).last();
 ```
 
 ```javascript
 //获取宽度
 $(`元素`).css(`width`);
 //设置宽度
-$(`元素`).css({
-   `width`: `200px`
-   });
+$(`元素`).css({ `width`: `200px`});
 ```
 
 ```javascript
@@ -74,7 +88,7 @@ $(`元素`).val(`值`);
 //获取页面结构
 $(`元素`).html();
 //插入页面结构
-$(`元素`).html(`<p>插入的P标签</p>`);
+$(`元素`).html(`插入的内容`);
 ```
 
 ```javascript
@@ -105,6 +119,8 @@ $(`元素`).removeClass(`class名`);
 $(`元素`).attr(`属性名`);
 //添加属性
 $(`元素`).attr(`属性名`, `属性值`);
+//添加多条属性
+$(`元素`).attr({`属性名1`: `属性值1`,`属性名2`: `属性值2`});
 //移除属性
 $(`元素`).removeAttr(`属性名`);
 ```
@@ -114,61 +130,82 @@ $(`元素`).removeAttr(`属性名`);
 $(`元素`).show(callback);
 //隐藏
 $(`元素`).hide();
+//淡入
+$(`元素`).fadeIn("fast",callback);
+//淡出
+$(`元素`).fadeOut("slow",callback);
 ```
 
 ```javascript
 //ajax
+//以下所有参数值均为默认值
 $().ajax({
-  //接口地址(类型：字符串)
-  url: null,
-  //请求类型(类型：字符串；可选参数：post、get)
-  type: "get",
-  //是否同步请求(类型：布尔)
-  async: true,
-  //设置请求头(类型：对象)
-  headers: null,
-  //发送数据类型(类型：字符串；可选参数：json、form)
-  dataType: "json",
-  //发送数据(类型：json或form；格式必须和发送数据类型保持一致)
-  data: null,
-  //成功回调方法(类型：方法；返回类型：对象)
-  success: null,
-  //失败回调方法(类型：方法)
-  error: null,
+    //接口地址(类型：字符串)
+    url: null,
+    //请求类型(类型：字符串；)
+    type: "get",
+    //是否异步请求(类型：布尔)
+    async: false,
+    //设置请求头(类型：JSON)
+    headers: { "Content-Type": "application/json" },
+    //发送数据类型(类型：字符串；可选参数：json、form)
+    dataType: "json",
+    //发送数据(类型：json或form；格式必须和发送数据类型保持一致)
+    data: null,
+    //请求中回调方法(类型：方法；返回类型：数字)
+    progress: null,
+    //成功回调方法(类型：方法；返回类型：对象)
+    success: null,
+    //失败回调方法(类型：方法)
+    error: null
 });
 ```
 
 ```javascript
-//fetch(纯异步请求方法；性能优于ajax)
+//fetch
+//以下所有参数值均为默认值
 $().fetch({
-  //接口地址(类型：字符串)
-  url: null,
-  //请求类型(类型：字符串；可选参数：post、get、put)
-  type: "get",
-  //设置请求头(类型：对象)
-  headers: null,
-  //发送数据(类型：JSON或FormData；格式必须和请求类型相对应)
-  data: null,
-  //成功回调方法(类型：方法；返回类型：对象)
-  success: null,
-  //失败回调方法(类型：方法)
-  error: null,
+    //接口地址(类型：字符串)
+    url: null,
+    //请求类型(类型：字符串)
+    type: "get",
+    //设置请求头(类型：JSON)
+    headers: { "Content-Type": "application/json" },
+    //发送数据(类型：JSON)
+    data: null,
+    //返回数据格式化(类型：方法)
+    returnData:function(res) {
+        return res.json();
+    },
+    //成功回调方法(类型：方法；返回类型：对象)
+    success: null,
+    //失败回调方法(类型：方法)
+    error: null
 });
 ```
 
 ```javascript
-let element = $("元素");
-//事件绑定
-element.bind("事件名", callback, 是否捕获);
-//事件解绑
-element.unbind("事件名");
+//表单序列化
+$(`表单`).serialize();
 
-//事件
+//获取url参数并转换成对象
+$().getParams();
+
+//点击事件
 $(`元素`).click(callback);
+//长按事件
 $(`元素`).taping(callback);
-$(`元素`).change(callback);
-$(`元素`).input(callback);
-$(`元素`).hover(移入, 移出);
-$(`元素`).scroll(callback);
-$(`元素`).transitionEnd(callback);
+//事件绑定
+$("元素").bind("事件名", callback, 是否捕获);
+//事件解绑
+$("元素").unbind("事件名");
+
+// 打乱数组
+$([0,1,2]).Array.Random();  //[1,2,0]
+//是否存在重复
+$([0,1,1]).Array.hasRepeat();  //true
+// 数组求和
+$([1,1,1]).Array.Sum(); //3
+
+//tips:大多数函数均支持链式写法，包括构造函数和拓展函数
 ```
