@@ -424,6 +424,53 @@ class PandoraAPI {
         return window.getComputedStyle(ele).getPropertyValue("*");
       }
     };
+    //获取布局信息
+    this.offset = () => {
+      const ele = this.get;
+      if (ele.length) {
+        return ele[0].getBoundingClientRect();
+      } else {
+        return ele.getBoundingClientRect();
+      }
+    };
+    //获取或设置宽度
+    this.width = (width = null) => {
+      const ele = this.get;
+      if (width) {
+        if (ele.length) {
+          for (let the of ele) {
+            the.style.width = width;
+          }
+        } else {
+          ele.style.width = width;
+        }
+      } else {
+        if (ele.length) {
+          return ele[0].offsetWidth;
+        } else {
+          return ele.offsetWidth;
+        }
+      }
+    };
+    //获取或设置高度
+    this.height = (height = null) => {
+      const ele = this.get;
+      if (height) {
+        if (ele.length) {
+          for (let the of ele) {
+            the.style.height = height;
+          }
+        } else {
+          ele.style.height = height;
+        }
+      } else {
+        if (ele.length) {
+          return ele[0].offsetHeight;
+        } else {
+          return ele.offsetHeight;
+        }
+      }
+    };
     //获取或插入文本
     this.text = str => {
       const ele = this.get;
@@ -483,20 +530,46 @@ class PandoraAPI {
     this.prepend = target => {
       const ele = this.get;
       if (ele.length) {
-        for (let the of ele) e.innerHTML = `${target}${the.innerHTML}`;
+        if (ele.nodeName.toLowerCase() == "select") {
+          if (typeof target == "object") {
+            ele.insertBefore(target, ele.firstChild);
+          } else {
+            ele.innerHTML = `${target}${ele.innerHTML}`;
+          }
+        } else {
+          for (let the of ele) {
+            if (typeof target == "object") {
+              the.insertBefore(target, the.firstChild);
+            } else {
+              the.innerHTML = `${target}${the.innerHTML}`;
+            }
+          }
+        }
       } else {
-        ele.innerHTML = `${target}${ele.innerHTML}`;
+        if (typeof target == "object") {
+          ele.insertBefore(target, ele.firstChild);
+        } else {
+          ele.innerHTML = `${target}${ele.innerHTML}`;
+        }
       }
       return this;
     };
     this.append = target => {
       const ele = this.get;
       if (ele.length) {
-        for (let the of ele) {
+        if (ele.nodeName.toLowerCase() == "select") {
           if (typeof target == "object") {
-            the.appendChild(target);
+            ele.appendChild(target);
           } else {
-            the.innerHTML += target;
+            ele.innerHTML += target;
+          }
+        } else {
+          for (let the of ele) {
+            if (typeof target == "object") {
+              the.appendChild(target);
+            } else {
+              the.innerHTML += target;
+            }
           }
         }
       } else {
@@ -750,17 +823,21 @@ class PandoraAPI {
             case "slow":
               opacity++;
               break;
+            default:
+              opacity += speed;
+              break;
           }
-          that.css({ opacity: opacity / 100 });
           req = requestAnimationFrame(fade);
         } else {
           callback && callback();
           cancelAnimationFrame(req);
         }
+        that.css({ opacity: opacity / 100 });
       };
-      that.show();
-      that.css({ opacity: 0 });
-      !Number(that.css("opacity")) && fade();
+      that.show(() => {
+        that.css({ opacity: 0 });
+        fade();
+      });
 
       return this;
     };
@@ -779,17 +856,20 @@ class PandoraAPI {
             case "slow":
               opacity--;
               break;
+            default:
+              opacity -= speed;
+              break;
           }
-          that.css({ opacity: opacity / 100 });
           req = requestAnimationFrame(fade);
         } else {
-          that.hide();
-          callback && callback();
-          cancelAnimationFrame(req);
+          that.hide(() => {
+            callback && callback();
+            cancelAnimationFrame(req);
+          });
         }
+        that.css({ opacity: opacity / 100 });
       };
-      Number(that.css("opacity")) && fade();
-
+      fade();
       return this;
     };
     //ajax
@@ -934,21 +1014,30 @@ class PandoraAPI {
         }
       }
     };
-    //全局变量
+    //渲染变量
     this.globalData = {};
-    //设置全局变量
+    //设置渲染变量
     this.setData = obj => {
       return new Promise((success, fail) => {
         for (let key in obj) {
           try {
             this.globalData[key] = obj[key];
           } catch (err) {
-            console.error(`[${Alphabet[8]}] 修改失败！${err}`);
+            console.error(`[${Alphabet[8]} - Mush] 变量修改失败！${err}`);
             fail(err);
           }
         }
         success();
       });
+    };
+    //获取渲染变量
+    this.getData = key => {
+      if (this.globalData[key]) {
+        return this.globalData[key];
+      } else {
+        console.error(`[${Alphabet[8]} - Mush] 获取的变量不存在！`);
+        return null;
+      }
     };
     //模板渲染
     this.template = (route, container) => {
@@ -1140,15 +1229,18 @@ const PandoraJs = SuperClass => {
         return r;
       };
 
-      const realVal = unique(matchValue);
-
       //遍历变量是否被动态修改
-      realVal.forEach(e => {
+      unique(matchValue).forEach(e => {
         Object.defineProperty(that.globalData, e, {
           set(value) {
             data[e] = value;
-            renderHtml();
-            Update && Update(getObj(that.globalData));
+            renderHtml()
+              .then(() => {
+                Update && Update(getObj(that.globalData));
+              })
+              .catch(err => {
+                console.error(`[${Alphabet[8]} - Mush] 变量更新失败：${err}`);
+              });
           },
           get() {
             return data[e];
@@ -1157,8 +1249,13 @@ const PandoraJs = SuperClass => {
         });
       });
 
-      renderHtml();
-      Init && Init(getObj(that.globalData));
+      renderHtml()
+        .then(() => {
+          Init && Init(getObj(that.globalData));
+        })
+        .catch(err => {
+          console.error(`[${Alphabet[8]} - Mush] 初始渲染失败：${err}`);
+        });
 
       return this;
     }

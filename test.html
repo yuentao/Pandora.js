@@ -6,34 +6,30 @@
   </head>
 
   <body>
-    <input type="file" />
-    <button>上传</button>
-  </body>
-  <script src="src/crypto/crypto/crypto-min.js"></script>
-  <script src="src/crypto/hmac/hmac-min.js"></script>
-  <script src="src/crypto/sha1/sha1-min.js"></script>
-  <script src="Pandora.min.js"></script>
-  <script>
-    const uploader = $().OSSupload({
-      // 阿里云账号AccessId(类型：字符串)
-      AccessId: "LTAIAeTrklu8DPY5",
-      // 阿里云账号AccessKey(类型：字符串)
-      AccessKey: "kFvTRddzmikJvzcgaBgGtbJwUlZFgV",
-      // OSS Bucket 外网域名(类型：字符串)
-      Endpoint: "https://madeinidea-cdn.oss-cn-shanghai.aliyuncs.com",
-      // 文件大小限制(类型：整数；单位：MB)
-      maxSize: 20,
-    });
+    <form action="">
+      <select id="s1" name="s1">
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
 
-    $("button").click(() => {
-      uploader
-        .start($("input").get.files[0], "js", "", e => {
-          showLoading(e);
-        })
-        .then(res => {
-          hideLoading();
-          console.log(res);
-        });
+      <select id="s2" name="s2">
+        <option value="2">2</option>
+      </select>
+    </form>
+
+    <div class="test"></div>
+
+    <button>获取</button>
+  </body>
+  <script src="dist/Pandora.min.js"></script>
+  <script>
+    // $("#s1").append(`<option value="3">3</option>`);
+    // $("#s2").prepend(`<option value="3">3</option>`);
+
+    $(".test").width("200px");
+
+    $("button").click(function () {
+      $("#s2").fadeOut();
     });
   </script>
 </html>
