@@ -6,30 +6,22 @@
   </head>
 
   <body>
-    <form action="">
-      <select id="s1" name="s1">
-        <option value="1">1</option>
-        <option value="2">2</option>
-      </select>
-
-      <select id="s2" name="s2">
-        <option value="2">2</option>
-      </select>
-    </form>
-
-    <div class="test"></div>
-
-    <button>获取</button>
+    <input type="text" />
   </body>
+
   <script src="dist/Pandora.min.js"></script>
   <script>
-    // $("#s1").append(`<option value="3">3</option>`);
-    // $("#s2").prepend(`<option value="3">3</option>`);
+    const name = 123;
+    const code = 123;
 
-    $(".test").width("200px");
-
-    $("button").click(function () {
-      $("#s2").fadeOut();
+    $().ajax({
+      url: "https://47.101.163.90:1994/?method=login",
+      type: "post",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+      data: { name, code },
+      success(res) {},
     });
   </script>
 </html>

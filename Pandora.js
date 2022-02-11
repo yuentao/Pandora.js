@@ -77,7 +77,7 @@ const setGlobalCSS = (mask, maskBg, blur, plan) => {
       position:fixed;
       top:0;
       left:0;
-      z-index:999;
+      z-index:999999999;
       width:100%;
       height:100%;
       display:flex;
@@ -257,7 +257,7 @@ window.showLoading = (progress = null) => {
 
   svg.src = icoConfig.load;
   mask.id = `${LoadingName}`;
-  mask.style.cssText = "font-size:18px;width:100%;height:100%;position:fixed;z-index:999;top:0;left:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;flex-direction:column";
+  mask.style.cssText = "font-size:18px;width:100%;height:100%;position:fixed;z-index:999999999;top:0;left:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;flex-direction:column";
 
   document.querySelector(`#${LoadingName}`) && document.body.removeChild(document.querySelector(`#${LoadingName}`));
   svg.style.width = svg.style.height = "3em";
@@ -332,7 +332,11 @@ class PandoraAPI {
     this.child = name => {
       const ele = this.get;
       try {
-        this.get = ele.querySelectorAll(name);
+        if (ele.querySelectorAll(name).length > 1) {
+          this.get = ele.querySelectorAll(name);
+        } else {
+          this.get = ele.querySelectorAll(name)[0];
+        }
       } catch (err) {
         console.error(`[${Alphabet[8]}] 未找到该子级！\n${err}`);
       }
@@ -556,7 +560,8 @@ class PandoraAPI {
     };
     this.append = target => {
       const ele = this.get;
-      if (ele.length) {
+
+      if (ele.length > 1) {
         if (ele.nodeName.toLowerCase() == "select") {
           if (typeof target == "object") {
             ele.appendChild(target);
@@ -754,6 +759,16 @@ class PandoraAPI {
       }
       return this;
     };
+    //移除焦点
+    this.blur = () => {
+      const ele = this.get;
+      if (ele.length) {
+        for (let the of ele) the.blur();
+      } else {
+        ele.blur();
+      }
+      return this;
+    };
     //点击事件
     this.click = fn => {
       const ele = this.get;
@@ -911,7 +926,7 @@ class PandoraAPI {
 
       http.onload = err => {
         if (http.status === 200 || http.statusText === "OK") {
-          const res = http.response;
+          const res = http.responseText || http.response;
           try {
             JSON.parse(res);
           } catch (err) {
@@ -931,7 +946,9 @@ class PandoraAPI {
         }
       };
 
-      for (let keys in headers) http.setRequestHeader(keys, headers[keys]);
+      if (headers) {
+        for (let keys in headers) http.setRequestHeader(keys, headers[keys]);
+      }
       http.send(params);
     };
     //fetch
@@ -1041,7 +1058,6 @@ class PandoraAPI {
     };
     //模板渲染
     this.template = (route, container) => {
-      // templatePolyfill();
       return new Promise((success, fail) => {
         const temp = (() => {
           let cur;
@@ -1086,7 +1102,7 @@ class PandoraAPI {
                 success();
               },
               error(err) {
-                console.error(`[${Alphabet[8]}] 不存在以下路由：${err.target.responseURL}`);
+                console.error(`[${Alphabet[8]} - Router] 不存在以下路由：${err.target.responseURL}`);
                 fail(`${route}`);
               },
             });
@@ -1095,7 +1111,7 @@ class PandoraAPI {
             success();
           }
         } else {
-          console.error(`[${Alphabet[8]}] 不存在以下路由：${route}`);
+          console.error(`[${Alphabet[8]} - Router] 不存在以下路由：${route}`);
           fail(`${route}`);
         }
       });
@@ -1268,62 +1284,52 @@ const PandoraJs = SuperClass => {
       config = this.extend(config, options);
       const that = this,
         { routes } = config;
+      let addEvent = !1;
 
       // 遍历路由路径
       const eachRoutes = path => {
-        return new Promise((success, fail) => {
-          if (path) {
-            if (JSON.stringify(routes).indexOf(path.split("?")[0]) < 0) {
-              fail(`[${Alphabet[8]} - Router] ${path.split("?")[0]} 不存在于routes！`);
-            } else {
-              routes.forEach(e => {
-                if (path.split("?")[0] == e.path) {
-                  that
-                    .template(path.split("?")[0], that.get)
-                    .then(() => {
-                      const query = that.getParams();
-                      window.location.href = `#${path}`;
-                      success();
+        if (path) {
+          if (JSON.stringify(routes).indexOf(path.split("?")[0]) < 0) {
+            console.error(`[${Alphabet[8]} - Router] ${path.split("?")[0]} 不存在于routes！`);
+          } else {
+            routes.forEach(e => {
+              if (path.split("?")[0] == e.path) {
+                that
+                  .template(path.split("?")[0], that.get)
+                  .then(() => {
+                    window.location.href = `#${path}`;
 
-                      try {
-                        e.callback && e.callback(query);
-                      } catch (err) {
-                        e.error && e.error(err);
-                        console.error(`[${Alphabet[8]} - Router] ${err}`);
-                      }
-
-                      window.onhashchange = null;
-                      setTimeout(() => {
-                        window.onhashchange = () => {
-                          that.hashChange(eachRoutes, routes);
-                        };
-                      }, 50);
-                    })
-                    .catch(err => {
+                    try {
+                      e.callback && e.callback(that.getParams());
+                    } catch (err) {
                       e.error && e.error(err);
                       console.error(`[${Alphabet[8]} - Router] ${err}`);
-                    });
-                }
-              });
-            }
-          } else {
-            console.error(`[${Alphabet[8]} - Router] 不存在任何路由！`);
+                    }
+                  })
+                  .catch(err => {
+                    e.error && e.error(err);
+                    console.error(`[${Alphabet[8]} - Router] ${err}`);
+                  });
+              }
+            });
           }
-        });
+        } else {
+          console.error(`[${Alphabet[8]} - Router] 不存在任何路由！`);
+        }
       };
 
       // 路由导航
       this.navigateTo = path => {
-        if (path.indexOf(`?`) > -1) {
-          setTimeout(() => {
-            window.location.href = `#${path}`;
-          }, 0);
-        } else {
-          setTimeout(() => {
-            eachRoutes(path);
-          });
-        }
+        window.location.href = `#${path}`;
       };
+
+      if (!addEvent) {
+        window.onhashchange = () => {
+          that.hashChange(eachRoutes, routes);
+        };
+        addEvent = !0;
+      }
+
       routes ? eachRoutes(routes[0].path) : console.error(`[${Alphabet[8]} - Router] 不存在任何路由！`);
 
       return this;
@@ -1679,13 +1685,16 @@ const PandoraJs = SuperClass => {
       this.prev = Prev;
       this.next = Next;
       this.direct = Swiper;
-      this.destroy = () => {
+      this.disable = () => {
         Inertia && parentEle.removeEventListener("touchmove", touchMove);
         Scroll && parentEle.removeEventListener("mousewheel", scrollMove);
         parentEle.removeEventListener("touchstart", touchStart);
         parentEle.removeEventListener("touchend", touchEnd);
         clearTimeout(AutoTimeout);
         cancelAnimationFrame(AutoPlayFrame);
+      };
+      this.enable = () => {
+        Init();
       };
 
       Init();

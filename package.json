@@ -1,6 +1,6 @@
 {
   "name": "pandora",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Pandora.Js，专为新手优化的JavaScript插件，属性多样、功能丰富，足以满足大部分功能需求。",
   "main": "Pandora.js",
   "dependencies": {
@@ -170,6 +170,7 @@
     "gulp-chinese2unicode": "^1.0.1",
     "gulp-cli": "^2.3.0",
     "gulp-header": "^2.0.9",
+    "gulp-jshint": "^2.1.0",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
     "has": "^1.0.3",
