@@ -1,6 +1,6 @@
 # Pandora.js
 
-#### 专为新手优化的 JavaScript 插件库，具备前端最常使用的插件，插件属性丰富，足以满足大部分前端的功能需求。
+#### 专为新手优化的 JavaScript 插件，拥有前端较为常用的功能，属性丰富。
 
 ## 基础方法
 
@@ -25,6 +25,32 @@ window.confirm({
   //点击取消(类型：方法)
   fail() {},
 });
+```
+
+> 重置后的alert和confirm可修改样式（建议放置于样式表最顶部）
+```css
+:root{
+    //alert背景色
+    --alertTheme: white;
+    //alert遮罩颜色
+    --alertBg: inherit;
+    //alert字体大小
+    --alertFontSize: 1.2rem;
+    //alert字体颜色
+    --alertColor: #000;
+    //confirm背景色
+    --confirmTheme: white;
+    //confirm遮罩颜色
+    --confirmBg: inherit;
+    //confirm字体大小
+    --confirmFontSize: 1.2rem;
+    //confirm字体颜色
+    --confirmColor: #000;
+    //confirm按钮颜色
+    --confirmBtnBg: #8477b6;
+    //confirm按钮字体颜色
+    --confirmBtnColor: #fff;
+}
 ```
 
 ```javascript
@@ -64,10 +90,20 @@ $(`元素`).last();
 ```
 
 ```javascript
-//获取宽度
+//获取样式
 $(`元素`).css(`width`);
-//设置宽度
+//设置样式
 $(`元素`).css({ `width`: `200px`});
+//获取宽度
+$(`元素`).width();
+//设置宽度
+$(`元素`).width(`200px`);
+//获取高度
+$(`元素`).height();
+//设置高度
+$(`元素`).height(`200px`);
+//获取布局信息
+$(`元素`).offset();
 ```
 
 ```javascript
@@ -129,7 +165,7 @@ $(`元素`).removeAttr(`属性名`);
 //显示
 $(`元素`).show(callback);
 //隐藏
-$(`元素`).hide();
+$(`元素`).hide(callback);
 //淡入
 $(`元素`).fadeIn("fast",callback);
 //淡出
@@ -142,7 +178,7 @@ $(`元素`).fadeOut("slow",callback);
 $().ajax({
     //接口地址(类型：字符串)
     url: null,
-    //请求类型(类型：字符串；)
+    //请求类型(类型：字符串)
     type: "get",
     //是否异步请求(类型：布尔)
     async: false,
@@ -206,6 +242,13 @@ $([0,1,2]).Array.Random();  //[1,2,0]
 $([0,1,1]).Array.hasRepeat();  //true
 // 数组求和
 $([1,1,1]).Array.Sum(); //3
+
+//是否开启插件跟踪统计（默认开启）
+window.enableTrack = true;
+//是否启用内置alert（默认开启）
+window.resetAlert  = true;
+//是否启用内置confirm（默认开启）
+window.resetConfirm  = true;
 
 //tips:大多数函数均支持链式写法，包括构造函数和拓展函数
 ```
