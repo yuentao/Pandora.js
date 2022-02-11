@@ -2102,7 +2102,7 @@ const PandoraJs = SuperClass => {
     ImgUpload(options) {
       let config = {
         //接口地址(类型：字符串)
-        apiUrl: `https://api.${Alphabet[3]}/Pd_uploadImage`,
+        apiUrl: null,
         //格式限制(类型：字符串)
         Format: "*",
         //选择类型(可选参数：default、camera)
@@ -2614,7 +2614,7 @@ const PandoraJs = SuperClass => {
       this.usingTrack(`wxSDK`);
       let config = {
         //相关接口地址(类型：字符串)
-        apiUrl: `https://wx.${Alphabet[3]}/wxshare.ashx?url=`,
+        apiUrl: null,
         //分享sdk版本
         sdk: "https://res.wx.qq.com/open/js/jweixin-1.6.0.js",
         //分享标题(类型：字符串或数组)
