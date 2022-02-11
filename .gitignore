@@ -3,11 +3,10 @@ node_modules/
 _notes/
 src/_notes
 *.config
-webpack.config.js
+*.config.js
 gulpfile.js
 bin/
 .vscode/
-kit.html
 kit.js
 kit.min.js
 *.html
