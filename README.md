@@ -172,6 +172,8 @@ $(`元素`).fadeIn("fast",callback);
 $(`元素`).fadeOut("slow",callback);
 ```
 
+## 数据交互
+
 ```javascript
 //ajax
 //以下所有参数值均为默认值
@@ -226,7 +228,11 @@ $(`表单`).serialize();
 
 //获取url参数并转换成对象
 $().getParams();
+```
 
+## 事件交互
+
+```javascript
 //点击事件
 $(`元素`).click(callback);
 //长按事件
@@ -242,7 +248,11 @@ $([0,1,2]).Array.Random();  //[1,2,0]
 $([0,1,1]).Array.hasRepeat();  //true
 // 数组求和
 $([1,1,1]).Array.Sum(); //3
+```
 
+## 全局修改
+
+```javascript
 //是否开启插件跟踪统计（默认开启）
 window.enableTrack = true;
 //是否启用内置alert（默认开启）
